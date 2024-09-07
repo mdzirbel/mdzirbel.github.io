@@ -1,0 +1,88 @@
+#map {
+  height: 500px;
+  width: 100%;
+}
+.filters {
+  margin: 10px 0;
+}
+
+/* Locations card CSS */
+.card {
+    display: flex;
+    justify-content: space-between;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 20px;
+    width: 80%;
+    margin: 20px auto;
+    font-family: Arial, sans-serif;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.card-section {
+    flex: 1;
+    padding: 0 10px;
+}
+.card-section:first-child {
+    flex: 2;
+}
+.card h2 {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+    color: #333;
+}
+.card p {
+    margin: 5px 0;
+    font-size: 1em;
+    color: #555;
+}
+.card .highlight {
+    font-weight: bold;
+    color: #2c3e50;
+}
+.button-container {
+    text-align: center;
+    margin: 20px;
+}
+
+/* Directions CSS */
+.button-container {
+    text-align: center;
+    margin: 20px;
+}
+.card-container {
+    margin: 20px auto;
+    width: 600px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+}
+.card-container h3 {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+}
+.card-container p {
+    margin-bottom: 20px;
+    font-size: 1em;
+}
+.link-button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #007BFF;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+    border-radius: 5px;
+}
+.link-button:hover {
+    background-color: #0056b3;
+}
+.explanation {
+    color: red;
+    font-weight: bold;
+    margin-top: 20px;
+}

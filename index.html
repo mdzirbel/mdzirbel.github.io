@@ -2,7 +2,12 @@
 <html>
   <head>
     <title>Sign Map</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="index.css">
+
+    <!-- Toast library -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
   </head>
   <body>
     <h3>My Google Maps Demo</h3>
@@ -15,6 +20,7 @@
       <label><input type="checkbox" class="status-filter" value="Ready to drop off" checked> Ready to drop off (<span id="Ready-to-drop-off-count">0</span>)</label>
       <label><input type="checkbox" class="status-filter" value="Not SoCo"> Not SoCo (<span id="Not-SoCo-count">0</span>)</label>
       <label><input type="checkbox" class="status-filter" value="Delivery Assigned" checked> Delivery Assigned (<span id="Delivery-Assigned-count">0</span>)</label>
+      <label><input type="checkbox" class="status-filter" value="Refused" checked> Refused (<span id="Refused-count">0</span>)</label>
     </div>
 
     <!--The div element for the map -->
@@ -32,6 +38,7 @@
       async defer></script>
     
     <script src="map.js"></script>
+    <script src="selection.js"></script>
   </body>
 </html>
 

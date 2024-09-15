@@ -1,88 +1,236 @@
+/* Base styles */
 #map {
   height: 500px;
   width: 100%;
 }
+
 .filters {
   margin: 10px 0;
 }
 
 /* Locations card CSS */
 .card {
-    display: flex;
-    justify-content: space-between;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    padding: 20px;
-    width: 80%;
-    margin: 20px auto;
-    font-family: Arial, sans-serif;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-wrap: wrap;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 20px;
+  width: 80%;
+  margin: 20px auto;
+  font-family: Arial, sans-serif;
+  background-color: #fff;
 }
+
 .card-section {
-    flex: 1;
-    padding: 0 10px;
+  flex: 1;
+  padding: 10px;
 }
+
 .card-section:first-child {
-    flex: 2;
+  flex: 2;
 }
+
 .card h2 {
-    font-size: 1.5em;
-    margin-bottom: 10px;
-    color: #333;
+  font-size: 1.5em;
+  margin-bottom: 10px;
+  color: #333;
 }
+
 .card p {
-    margin: 5px 0;
-    font-size: 1em;
-    color: #555;
+  margin: 5px 0;
+  font-size: 1em;
+  color: #555;
 }
+
 .card .highlight {
-    font-weight: bold;
-    color: #2c3e50;
+  font-weight: bold;
+  color: #2c3e50;
 }
+
 .button-container {
-    text-align: center;
-    margin: 20px;
+  text-align: center;
+  margin: 20px;
+}
+
+.status-select {
+  padding: 5px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.card button {
+  padding: 5px 10px;
+  margin-left: 10px;
+  border-radius: 5px;
+  border: none;
+  background-color: #28a745; /* Green background */
+  color: white;
+  cursor: pointer;
+}
+
+.card button:hover {
+  background-color: #218838; /* Darker green */
+}
+
+/* Status highlight styles */
+.status-dropped-off {
+  border-left: 10px solid green;
+}
+
+.status-wait-to-drop-off {
+  border-left: 10px solid orange;
+}
+
+.status-dropoff-time-needs-review {
+  border-left: 10px solid blue;
+}
+
+.status-ready-to-drop-off {
+  border-left: 10px solid lightgreen;
+}
+
+.status-not-soco {
+  border-left: 10px solid gray;
+}
+
+.status-delivery-assigned {
+  border-left: 10px solid purple;
+}
+
+.status-refused {
+  border-left: 10px solid red;
 }
 
 /* Directions CSS */
 .button-container {
-    text-align: center;
-    margin: 20px;
+  text-align: center;
+  margin: 20px;
 }
+
 .card-container {
-    margin: 20px auto;
-    width: 600px;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    font-family: Arial, sans-serif;
+  margin: 20px auto;
+  width: 600px;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  font-family: Arial, sans-serif;
 }
+
 .card-container h3 {
-    font-size: 1.2em;
-    margin-bottom: 10px;
+  font-size: 1.2em;
+  margin-bottom: 10px;
 }
+
 .card-container p {
-    margin-bottom: 20px;
-    font-size: 1em;
+  margin-bottom: 20px;
+  font-size: 1em;
 }
+
 .link-button {
-    display: block;
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
-    background-color: #007BFF;
-    color: white;
-    text-align: center;
-    text-decoration: none;
-    font-size: 16px;
-    border-radius: 5px;
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: #007BFF;
+  color: white;
+  text-align: center;
+  text-decoration: none;
+  font-size: 16px;
+  border-radius: 5px;
 }
+
 .link-button:hover {
-    background-color: #0056b3;
+  background-color: #0056b3;
 }
+
 .explanation {
-    color: red;
-    font-weight: bold;
-    margin-top: 20px;
+  color: red;
+  font-weight: bold;
+  margin-top: 20px;
+}
+
+/* --- Mobile Styles --- */
+@media (max-width: 768px) {
+  /* Map takes up 80% of the viewport height */
+  #map {
+    height: 80vh;
+  }
+
+  /* Directions and cards take full width */
+  .card,
+  .card-container {
+    width: 100%;
+    margin: 20px 0;
+    padding: 15px;
+  }
+
+  /* Remove columns in cards */
+  .card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .card-section {
+    width: 100%;
+  }
+
+  .card-section:first-child {
+    flex: 1;
+  }
+
+  /* Increase font sizes for better readability */
+  body {
+    font-size: 18px;
+  }
+
+  .card h2 {
+    font-size: 1.8em;
+  }
+
+  .card p,
+  .card-container p,
+  .card-container h3 {
+    font-size: 1.2em;
+  }
+
+  .link-button {
+    font-size: 18px;
+    padding: 15px;
+  }
+
+  .status-select,
+  .card button {
+    font-size: 1em;
+    padding: 10px;
+  }
+
+  /* Adjust filter checkboxes for mobile */
+  .filters {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .filters label {
+    margin-bottom: 10px;
+    font-size: 1.1em;
+  }
+
+  /* Button styles */
+  button {
+    font-size: 1em;
+    padding: 10px 15px;
+  }
+
+  button,
+.link-button {
+  padding: 15px;
+  font-size: 18px;
+}
+
+.status-select {
+  padding: 10px;
+  font-size: 16px;
+}
 }

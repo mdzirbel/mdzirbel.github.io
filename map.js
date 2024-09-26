@@ -63,6 +63,7 @@ async function addMarkersFromAPI(AdvancedMarkerElement, PinElement) {
     const data = await response.json();
 
     data.forEach((row, index) => {
+      console.log(row, index)
       const latLon = row.LatLon.split(",");
       const lat = parseFloat(latLon[0]);
       const lng = parseFloat(latLon[1]);

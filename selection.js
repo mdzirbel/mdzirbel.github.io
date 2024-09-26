@@ -14,6 +14,7 @@ function addCardForMarker(marker) {
   // Generate status class for styling
   const statusClass = 'status-' + data.Status.replace(/\s+/g, '-').toLowerCase();
 
+  // Create the card HTML as before
   const card = `
       <div class="card ${statusClass}" id="${cardId}">
           <div class="card-section">
@@ -42,8 +43,32 @@ function addCardForMarker(marker) {
   `;
 
   document.getElementById('status-card-container').innerHTML += card;
+
+  // Add the table entry
+  addTableEntry(data);
+
   generateDirections(selectedMarkers);
 }
+
+function addTableEntry(data) {
+  const table = document.getElementById('marker-info-table');
+
+  // Create a new row
+  const row = table.insertRow();
+
+  // Add "Address" cell
+  const addressCell = row.insertCell(0);
+  addressCell.innerHTML = data.Address;
+
+  // Add "What they want" cell
+  const wantCell = row.insertCell(1);
+  wantCell.innerHTML = data["What they want"];
+
+  // Add "Notes" cell
+  const notesCell = row.insertCell(2);
+  notesCell.innerHTML = data.Notes;
+}
+
 
 function sendStatus(cardId, index) {
   console.log(`Sending status for index: ${index}`);

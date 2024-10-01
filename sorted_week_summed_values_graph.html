@@ -1,0 +1,37 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Week Summed Values Bar Graph</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h2>Week Summed Values Bar Graph</h2>
+    <canvas id="weekSumChart" width="400" height="200"></canvas>
+    <script>
+        var ctx = document.getElementById('weekSumChart').getContext('2d');
+        var weekSumChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['"4/28/24 - 5/4/24"', '"5/5/24 - 5/11/24"', '"5/19/24 - 5/25/24"', '"5/26/24 - 6/1/24"', '"6/2/24 - 6/8/24"', '"6/9/24 - 6/15/24"', '"6/16/24 - 6/22/24"', '"6/23/24 - 6/29/24"', '"6/30/24 - 7/6/24"', '"7/7/24 - 7/13/24"', '"7/14/24 - 7/20/24"', '"7/21/24 - 7/27/24"', '"7/28/24 - 8/3/24"', '"8/4/24 - 8/10/24"', '"8/11/24 - 8/17/24"', '"8/18/24 - 8/24/24"', '"8/25/24 - 8/31/24"', '"9/1/24 - 9/7/24"', '"9/8/24 - 9/14/24"', '"9/15/24 - 9/21/24"', '"9/22/24 - 9/28/24"', '"9/29/24 - 10/5/24"'],
+                datasets: [{
+                    label: 'Summed Values',
+                    data: ['1', '2', '0', '31', '11', '10', '6', '20', '153', '545', '251', '251', '155', '138', '93', '564', '424', '247', '374', '227', '294', '104'],
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

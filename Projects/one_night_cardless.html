@@ -1,0 +1,199 @@
+
+<html>
+
+	<head>
+		<title>Matthew Zirbel</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="stylesheet" type="text/css" href="../mainStyle.css">
+		<link rel="icon" href="../logo.png">
+		<script src="projects.js"></script>
+	</head>
+
+	<body>
+
+		<div id="main">
+
+			<div id="left">
+				
+				<a class="alwaysBlue" href="../index.html">&#8592; Back</a>
+				
+				<h2>One Night Cardless</h2>
+
+				<p>
+					I made an Android app to play One Night Werewolf without the cards, called One Night Cardless. It does the night phase of One Night Werewolf faster, simpler, and without needing to close your eyes. You can install the Android app <a href="https://play.google.com/store/apps/details?id=mdzirbel.werewolf">here</a>. If you don't know how to play you can find the instruction book <a href="https://www.fgbradleys.com/rules/rules2/OneNightUltimateWerewolf-rules.pdf">here</a>.
+				</p>
+
+				<p>
+					The app works by first asking the players to put in their names, which it uses to set up an order to pass the phone around later, and to determine the player count. Users can choose to not enter names, and the phone will just use Player 1, Player 2, etc. which works if they are standing in an ordered circle.
+				</p>
+
+				<div class="toggle_picture" onclick="togglePicture('main_activity_pic')">Player Name Screen</div>
+				<div onclick="togglePicture('main_activity_pic')" id="main_activity_pic" class="toggle">
+
+					<p>
+						Players can enter their names, then click Done.
+						<br><br>
+						The plus button adds a new player form under where it was clicked
+						<br><br>
+						The minus button removes the clicked form
+					</p>
+
+					<img class="app_img" src="One Night Cardless Pictures/main_activity.webp" alt="Player Name Screen">
+
+				</div>
+
+				<p>
+					They are then prompted to select which roles they would like to play with. All base game roles are currently implemented, with Daybreak roles planned.
+				</p>
+
+				<div class="toggle_picture" onclick="togglePicture('role_select')">Role Select Screen</div>
+				<div onclick="togglePicture('role_select')" id="role_select" class="toggle">
+
+					<p>
+					</p>
+
+					<img class="app_img" src="One Night Cardless Pictures/role_select.webp" alt="Role Select Screen">
+
+				</div>
+
+				<p>
+					Once all desired roles are selected, the app then prompts you to pass it to the correct player. Once the player has it, they can select that they are ready to view their role and take their action.
+				</p>
+
+				<div class="toggle_picture" onclick="togglePicture('player_1')">Player 1 Screen</div>
+				<div onclick="togglePicture('player_1')" id="player_1" class="toggle">
+
+					<p>
+					</p>
+
+					<img class="app_img" src="One Night Cardless Pictures/player_1.webp" alt="Player One Screen">
+
+				</div>
+
+				<p>
+					For the action, players who get information are shown what information they get, and players who need to select a role or roles are given the option to do so.
+				</p>
+				<p>
+					The system used to ensure that proper order is kept regardless of the order that roles take their actions is complicated. <span class="toggle_picture" onclick="togglePicture('explanation')">Click Here</span> for a detailed explanation of how it works
+				</p>
+
+				<div onclick="togglePicture('explanation')" id="explanation" class="toggle">
+
+					<p>
+						The most basic complication is ordering. There is a night order set by the base game, and that needs to be kept regardless of the player order. Additionally, player's roles cannot be decided by their seating order, so that they can't get any more information than they could in the base game.
+						<br><br>
+						If the robber comes in front of the seer, the seer still needs to see what the role was at the start.
+						<br><br>
+						To fix this, the role at every point in the night is saved with each player's information. That way, when the Robber switches, they only adjust the post-Robber roles, which are "downstream" of the Robber, leaving the pre-Robber ones saved.
+					</p>
+
+					<p>
+						Next comes up the complication of multiple switches. If the Robber simply switched all roles downstream of themselves, then if the Troublemaker came up after them (night order is Troublemaker then Robber), then the Troublemaker could override and erase the Robber's switches.
+						<br><br>
+						To avoid this, instead of immediately doing switches they are added to a queue, then all carried out in the correct order. The Doppelganger, who switches before the Seer sees, immediately does their switches so that the Seer will see after the switch.
+					</p>
+
+					<p>
+						Finally, there are two very difficult roles to implement: the Doppelganger and Insomniac. If the Doppelganger gets their turn after the Seer sees, the Seer would need to know what happens after they had the phone. Similarly, if the Insomniac gets the phone before the Robber, there would be no way for them to actually know if they'd been switched.
+						<br><br>
+						Unfortunately, the only way to avoid this was to make it so that if the Doppelganger or Insomniac are in the game that the phone needs to be passed around twice. This added a lot of complications but was ultimately doable.
+					</p>
+
+				</div>
+
+				<div class="toggle_picture" onclick="togglePicture('robber_action')">Robber Action Screen</div>
+				<div onclick="togglePicture('robber_action')" id="robber_action" class="toggle">
+
+					<p>
+					</p>
+
+					<img class="app_img" src="One Night Cardless Pictures/robber_action.webp" alt="Robber Action Screen">
+
+				</div>
+
+				<div class="toggle_picture" onclick="togglePicture('seer_action')">Seer Action</div>
+				<div onclick="togglePicture('seer_action')" id="seer_action" class="toggle">
+
+					<p>
+					</p>
+
+					<img class="app_img" src="One Night Cardless Pictures/seer_action.webp" alt="Seer Action Screen">
+
+				</div>
+
+				<p>
+					After all players have taken their action, there is a countdown for five minutes in which the players are able to talk.
+				</p>
+
+				<div class="toggle_picture" onclick="togglePicture('timer')">Timer Screen</div>
+				<div onclick="togglePicture('timer')" id="timer" class="toggle">
+
+					<p>
+						In the background is a list of all the roles, so the players can reference it if they don't remember which roles were included.
+						<br><br>
+						The vote now button brings the timer to zero and causes the three-second countdown to a vote to start immediately.
+					</p>
+
+					<img class="app_img" src="One Night Cardless Pictures/timer.webp" alt="Timer Screen">
+
+				</div>
+
+				<p>
+					After the countdown, the players have voted and their final roles are displayed.
+				</p>
+
+				<div class="toggle_picture" onclick="togglePicture('role_reveal')">Role Reveal Screen</div>
+				<div onclick="togglePicture('role_reveal')" id="role_reveal" class="toggle">
+
+					<p>
+					</p>
+
+					<img class="app_img" src="One Night Cardless Pictures/role_reveal.webp" alt="Role Reveal Screen">
+
+				</div>
+
+				<p>
+					If you're interested in the app you can find it for free on the app store <a href="https://play.google.com/store/apps/details?id=mdzirbel.werewolf">here</a>. If you like it please consider giving it a rating or a review!
+				</p>
+
+				<p>
+					You can also look at the code on the <a href="https://github.com/Maxfojtik/Werewolf">github</a> page
+				</p>
+
+				<p>
+					Upcoming in the app is a settings page where how long the timer is can be changed, as well as the addition of the Daybreak expansion. The Daybreak expansion is going to need up to three rounds of the phone to accomodate the Sentinel and Doppelganger together, and I'm doing some major refactoring to make it easier to add roles.
+				</p>
+
+				<a class="alwaysBlue" href="../index.html">&#8592; Back</a>
+
+			</div>
+
+			<div id="right">
+
+				<img src="../logo.png" width="80px" height="50px" style="object-fit: cover;">
+				<h2>Matthew Zirbel</h2>
+
+				<a class="navlink" href="../index.html">About Me</a>
+				<br>
+				<b>Projects:</b>
+				<br>
+				<span id="current_page_sidebar">One Night Cardless</span>
+				<br>
+				<a class="navlink" href="text_zendo.html">Text Based Zendo</a>
+				<br>
+				<a class="navlink" href="room_lights.html">Room Lights</a>
+				<br>
+				<a class="navlink" href="lock_system.html">Lock System</a>
+				<br>
+				<a class="navlink" href="youtube_pauser.html">YouTube Pauser</a>
+				<br>
+				<a class="navlink" href="old_projects.html">Old Projects</a>
+				<br>
+
+			</div>
+
+		</div>
+
+	</body>
+
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html onmousemove="getMouseMove(event)" onclick="getMouseClick(event)">
+<head>
+	<link rel="stylesheet" type="text/css" href="poolStyle.css">
+	<title>Knockout Pool</title>
+</head>
+<body>
+
+<h1>Knockout Pool</h1>
+
+<div class="vertical-menu main">
+	<ol>
+		<li onclick="menuNewGame()">New Game</li>
+		<li onclick="howToPlay()">How To Play</li>
+		<a href="../index.html"><li>Main Site</li></a>
+		<li onclick="credits()">Credits</li>
+	</ol>
+</div>
+
+<div class="vertical-menu newGame">
+	<ol>
+		<li onclick="menuPlayerNum()">Number of Players</li>
+		<li onclick="menuMaps()">Map</li>
+		<li onclick="play()">Play</li>
+		<li onclick="menuMain('newGame')">Back</li>
+	</ol>
+</div>
+
+<div class="vertical-menu playerNum">
+	<ol>
+		<li onclick="setPlayerNum(1)">1</li>
+		<li onclick="setPlayerNum(2)">2</li>
+		<li onclick="setPlayerNum(3)">3</li>
+		<li onclick="setPlayerNum(4)">4</li>
+		<li onclick="menuNewGame('playerNum')">Back</li>
+	</ol>
+</div>
+
+<div class="vertical-menu maps">
+	<ol>
+		<li onclick="setMap('map1')">map1</li>
+		<li onclick="setMap('map2')">map2</li>
+		<li onclick="setMap('map3')">map3</li>
+		<li onclick="setMap('map4')">map4</li>
+		<li onclick="menuNewGame('maps')">Back</li>
+	</ol>
+</div>
+
+<div class="howToPlay">
+The goal of the game is to be the last player with balls.<br><br>
+Click to select a ball, then click where you want to go.<br><br>
+The farther away you click from the ball, the faster it will go.<br><br>
+Balls which fall off of the green field will disappear.<br><br>
+Balls which run into opponent's converters will turn into their team.<br><br>
+Refresh to return to the main menu from anywhere.<br><br>
+<div class="vertical-menu center"><ol><li onclick="menuMain('howToPlay')">Back</li></ol></div>
+</div>
+
+<div class="credits">
+Game designed and made by Matthew Zirbel<br><br>
+Thanks to my dad for helping me with some of the math<br><br>
+Thanks to Aaron Maupin for helping me translate the Python into JavaScript<br><br>
+You can contact me at matthew.d.zirbel@gmail.com.<br><br>
+<div class="vertical-menu center"><ol><li onclick="menuMain('credits')">Back</li></ol></div>
+</div>
+
+<p class="winnerText"><p>
+
+<canvas id="gameCanvas" width="700" height="500"></canvas>
+
+<div class="display">
+<p class="team"></p>
+<p class="map"></p>
+<p class="gameState"></p>
+<p class="test"></p>
+</div>
+
+</body>
+
+<script src="../jquery-3.2.1.min.js"></script>
+<script src="pool.js"></script>
+
+</html>

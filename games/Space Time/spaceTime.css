@@ -1,0 +1,120 @@
+h1 {
+	color: black;
+	text-align: center;
+	font-size: 100px;
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
+
+body {
+	background-color: lightblue;
+}
+
+canvas {
+	position: relative;
+	margin: auto;
+	left: 0px;
+	right: 0px;
+	background-color: black;
+	border: 1px solid black;;
+	display: none;
+}
+
+img {
+	visibility: hidden;
+}
+
+a {
+	text-decoration: none;
+}
+.vertical-menu {
+	position: absolute;
+	width: 200px;
+	margin: auto;
+}
+
+.vertical-menu li {
+    /*background-color: white;*/
+    color: black; /* Black text color */
+    display: table; /* Make the links appear below each other */
+    padding: 15px; /* Add some padding */
+    text-decoration: none; /* Remove underline from links */
+    border: solid;
+    border-width: 1px;
+    width: 160px;
+}
+
+.display {
+	display: none;
+    position: relative;
+    left: 10px;
+    width: 700px;
+    right: 0px;
+    margin: auto;
+    margin-top: 10px;
+}
+.winnerText {
+	display:none;
+	font-size: 150px;
+	text-align: center;
+	margin-top: 40px;
+}
+
+.team {}
+.map {}
+.gameState {}
+.test {}
+.yourScore {
+	text-align: center;
+}
+.highscores {
+	text-align: center;
+}
+.postGame {
+	display: none;
+}
+.center {
+	left: 0%;
+	right: 6%;
+}
+.main {
+	left: 0%;
+	right: 6%;
+	transition: .5s; /* take 1s to change right */
+}
+.newGame {
+	left: 0%;
+	right: 6%;
+	transition: .5s;
+	display: none;
+}
+.howToPlay {
+	text-align: center;
+	display: none;
+}
+.credits {
+	text-align: center;
+	display: none;
+}
+.maps {
+	left: 0%;
+	right: 6%;
+	transition: .5s;
+	display: none;
+}
+.playerNum {
+	left: 0%;
+	right: 6%;
+	display: none;
+}
+
+.menuLeft {
+	right: 60%;
+}
+.menuMiddle {
+	right: 6%;
+}
+
+.vertical-menu li:hover {
+    background-color: #ccc; /* Dark grey background on mouse-over */
+}

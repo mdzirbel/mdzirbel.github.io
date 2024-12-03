@@ -1,0 +1,144 @@
+
+<html>
+
+	<head>
+		<title>Matthew Zirbel</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="stylesheet" type="text/css" href="../mainStyle.css">
+		<link rel="icon" href="../logo.png">
+		<script src="projects.js"></script>
+	</head>
+
+	<body>
+
+		<div id="main">
+
+			<div id="left">
+
+				<a class="alwaysBlue" href="../index.html">&#8592; Back</a>
+				
+				<h3>Room Lights</h3>
+
+				<p>
+					My roommate, Max, and I found the lighting in our dorm room to be somewhat disappointing. We also liked the idea of using LED strips to light our room. So we made a system of LED strips to light our room. We use the LEDs for our everyday lighting and they're brighter and more cheerful than the room's yellowish light. 
+				</p>
+
+				<p>
+					The LED Strips:
+					<br>
+					We bought five strips of 300 individually addressible led strips, then cut them into 10 strips of 150 leds. They can be changed individually to any color and brightness, and it takes them running at about 30% power to light the room fully.
+				</p>
+
+				<div class="toggle_picture" onclick="togglePicture('ceiling')">Lights Picture</div>
+				<div onclick="togglePicture('ceiling')" id="ceiling" class="toggle">
+
+					<p>
+						As you can see in the picture, the LEDs take up most of the area of the ceiling, with about a foot between each string. Power wires run from a central position, out to the center of the room, then attach to the center of the LED strips. There are small data wires which let the LEDs know what color and brightness to be which snake between the edges of the strips
+					</p>
+
+					<img src="Room Pictures/ceiling.jpg" alt="Ceiling Lights Picture" width="100%">
+
+				</div>
+
+				<p>
+					The Control System:
+					<br>
+					The LEDs are controlled by a Raspberry Pi running a Python program. The program updates the LEDs (using the PWM on the Raspberry Pi) up to about 30 fps. It can run a couple of color programs we wrote, including changing color, cycling through colors, and displaying twinkling "stars" on the ceiling.
+					<br><br>
+					To determine what brightness and program it should run, the program uses AWS to check for color, brightness, and theme. Setting the lights is then just a matter of telling the Alexa in our room what we want, eg. "Alexa, brightness to 50" to get 50% of maximum brightness
+				</p>
+
+				<div class="toggle_picture" onclick="togglePicture('ceiling_pi')">Raspberry Pi Picture</div>
+				<div onclick="togglePicture('ceiling_pi')" id="ceiling_pi" class="toggle">
+
+					<p>
+						The Raspberry Pi is the larger board. Connecting to it is an ethernet cable in the bottom right so it can update with AWS, red and green power wires coming in from the left and connecting to a smaller wiring board before going to power the Pi, and white, green, and red information wires leaving from the top.
+					</p>
+
+					<img src="Room Pictures/ceiling_pi.jpg" alt="Raspberry Pi Picture" width="100%">
+
+				</div>
+
+				<p>
+					Power Supply:
+					<br>
+					To power all the LEDs, we bought a sizeable 5v, 60A power supply with a fan. The LEDs only draw about 45A and the Raspberry Pi's require negligible power so it's quite capable of powering them.
+					<br><br>
+					To get the power to the lights there are separate wires for every two strips, and they power them from the center. Although we could power them all with one cord and from the near side, this would cause the further out pixels to have less power, resulting in them being less blue and visibly reddish.
+				</p>
+
+				<div class="toggle_picture" onclick="togglePicture('wiring')">Wiring Picture</div>
+				<div onclick="togglePicture('wiring')" id="wiring" class="toggle">
+
+					<p>
+						The power supply is the silver box near the top of the picture
+						<br><br>
+						The thick black wire going from the right of the power supply into the box plugs into the wall
+						<br><br>
+						The red and black wires going to the top left of the picture are to the LED strips
+						<br><br>
+						The wire going to the bottom right of the picture is to the Raspberry Pi on the door
+					</p>
+
+					<img src="Room Pictures/wiring.jpg" alt="Wiring Picture" width="100%">
+
+				</div>
+
+				<p>
+					Upcoming is a system for playing pong on the ceiling. We have a laser, two servos, and the lights on the end will serve as the paddles. The pong program works on the GUI so the next steps will be to 3D print a mount and write a phone app to control where the paddles are.
+				</p>
+
+				<div class="toggle_picture" onclick="togglePicture('pong')">Pong Gui Picture</div>
+				<div onclick="togglePicture('pong')" id="pong" class="toggle">
+
+					<p>
+						The laser is the red dot
+						<br><br>
+						The black sections represent areas where the LEDs are turned off
+						<br><br>
+						The white sections represent the paddles, where the LEDs are turned on
+					</p>
+
+					<img id="pong_pic" src="Room Pictures/pong.jpg" alt="Wiring Picture" width="100%">
+
+				</div>
+
+				<p>
+					We mostly split up the work on the project, I did most of the coding infrastructure and GUI, Max did AWS, Raspberry Pi, and most of the hardware
+					<br><br>
+					You can find the code <a href="https://github.com/mdzirbel/Room">here</a>
+				</p>
+
+				<a class="alwaysBlue" href="../index.html">&#8592; Back</a>
+
+			</div>
+
+			<div id="right">
+
+				<img src="../logo.png" width="80px" height="50px" style="object-fit: cover;">
+				<h2>Matthew Zirbel</h2>
+
+				<a class="navlink" href="../index.html">About Me</a>
+				<br>
+				<b>Projects:</b>
+				<br>
+				<a class="navlink" href="one_night_cardless.html">One Night Cardless</a>
+				<br>
+				<a class="navlink" href="text_zendo.html">Text Based Zendo</a>
+				<br>
+				<span id="current_page_sidebar">Room Lights</span>
+				<br>
+				<a class="navlink" href="lock_system.html">Lock System</a>
+				<br>
+				<a class="navlink" href="youtube_pauser.html">YouTube Pauser</a>
+				<br>
+				<a class="navlink" href="old_projects.html">Old Projects</a>
+				<br>
+
+			</div>
+
+		</div>
+
+	</body>
+
+</html>

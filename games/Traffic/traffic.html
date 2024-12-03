@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html onkeydown="keyPress(event)" onkeyup="keyUp(event)" onmousemove="getMouseMove(event)" onclick="getMouseClick(event)">
+<head>
+	<link rel="stylesheet" type="text/css" href="trafficStyle.css">
+	<title>Traffic</title>
+</head>
+<body>
+
+<h1>Traffic</h1>
+
+<div class="vertical-menu main">
+	<ol>
+		<li onclick="play()">Play</li>
+		<li onclick="howToPlay()">How To Play</li>
+		<a href="../index.html"><li>Main Site</li></a>
+		<li onclick="credits()">Credits</li>
+	</ol>
+</div>
+
+<div class="howToPlay">
+The goal is to survive as long as possible.<br><br>
+Use the left and right arrow keys to go to the left and right.<br><br>
+Use the up and down keys to use the powerups.<br><br>
+Up makes you invincible for two seconds. The red bar indicates it is ready to be used.<br><br>
+Down stops the cars while you are holding it. The green bar depeletes while you are holding it and refils when you are not holding it<br><br>
+Hit enter to restart quickly.<br><br>
+<div class="vertical-menu center"><ol><li onclick="menuMain('howToPlay')">Back</li></ol></div>
+</div>
+
+<div class="credits">
+Game designed and made by Matthew Zirbel<br><br>
+Thanks to my Dad for answering all my questions patiently as I learned JS and HTML<br><br>
+You can contact me at matthew.d.zirbel@gmail.com.<br><br>
+<div class="vertical-menu center"><ol><li onclick="menuMain('credits')">Back</li></ol></div>
+</div>
+
+<div class="postGame">
+	<div class="yourScore"></div><br>
+	<div class="highscores"></div>
+	<div class="vertical-menu center">
+		<ol>
+			<li onclick="play()">New Game</li>
+			<li onclick="menuMain('postGame')">Main Menu</li>
+		</ol>
+	</div>
+</div>
+
+<canvas id="gameCanvas" onkeypress="keyPress(event)" width="600" height="700"></canvas>
+
+</body>
+
+<script src="../jquery-3.2.1.min.js"></script>
+<script src="traffic.js"></script>
+
+</html>

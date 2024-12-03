@@ -1,0 +1,240 @@
+
+<html>
+
+	<head>
+		<title>Matthew Zirbel</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="stylesheet" type="text/css" href="../mainStyle.css">
+		<link rel="icon" href="../logo.png">
+		<script src="projects.js"></script>
+	</head>
+
+	<body>
+
+		<div id="main">
+
+			<div id="left">
+				
+				<a class="alwaysBlue" href="../index.html">&#8592; Back</a>
+				
+				<h2>Text Based Zendo</h2>
+
+				<p>
+					Text-Zendo is a game about guessing a rule. One person thinks of a rule, then people try to figure it out by guessing and reverse-engineering it based on what fits it. Guesses can be any series of letters and numbers, with spaces separating words.
+					When someone makes a rule, they should provide an example which fits and one which does not. Here's an example game:
+				</p>
+				<p>
+					Person 1: I have a rule<br>
+					Person 1: "the the the" fits the rule<br>
+					Person 1: "the a the" does not fit the rule
+				</p>
+				<p>
+					Person 2: Does a a a fit the rule?<br>
+					Person 1: Yes<br>
+					Person 3: Does b a a fit the rule?<br>
+					Person 1: No<br>
+					Person 2: Is the rule that all words in the guess have to be the same?<br>
+					Person 1: Yes
+				</p>
+				<p>
+					I've set up a discord bot which can automate the process of checking people's guesses against the rule.
+				</p>
+
+
+				<div class="toggle_picture" onclick="togglePicture('example_game')">Example Game</div>
+				<div onclick="togglePicture('example_game')" id="example_game" class="toggle">
+
+					<p>
+						!t is a way to test a guess against the rule
+					</p>
+
+					<img src="Text Zendo Pictures/example_game.PNG" alt="Example Game Picture" style="max-width:100%">
+
+				</div>
+
+				<p>
+					The discord bot can only interpret rules a very specific way, so here's a description of how to format rules:
+				</p>
+
+				<p>
+					Let's look at a basic rule: "word is subset of dictionary"<br>
+					There are three elements to this rule: "word", "is subset of", and "dictionary".<br>
+					"word" is the list of words that are in the guess. If someone guessed "Hello My Name Is Matthew", word would be the set: ["Hello", "My", "Name", "Is", "Matthew"]<br>
+					dictionary is the entire list of words, ["a", "aa", "aaa", "aachen", "aardvark" ...]<br>
+					"&#60;Set1&#62; is subset of &#60;Set2&#62;" is a rule. It returns True if everything in &#60;Set1&#62; is also in &#60;Set2&#62;, ignoring case.<br>
+					In this case, "Matthew" is not in the dictionary, so our guess does not fit the rule<br>
+				</p>
+				<p>
+					A more formal look at rule creation:<br>
+					Every rule takes some type of value, and returns some type of value.<br>
+					The return value in the outermost rule should be a boolean.<br>
+					Parentheses encase all rules except the outermost one.<br>
+
+				</p>
+
+				<div class="toggle_picture" onclick="togglePicture('definitions')">Formal Definitions</div>
+				<div onclick="togglePicture('definitions')" id="definitions" class="toggle">
+
+					<p style="white-space: pre-wrap; font-size: 12px; line-height: 15px"><font face="monospace">
+Set:
+Dictionary
+Animals
+Nouns
+Verbs
+Adjectives
+Countries
+States
+Python Reserved Words
+Uppercase
+Lowercase
+Vowel
+Consonant
+User defined set = {"element_1", "element_2" ...}
+
+Find the contents of predefined sets at: https://github.com/mdzirbel/ZendoBot/tree/master/Sets
+
+Conditions:
+True
+False
+&#60;Set&#62; is palindrome                    |  Whether every element in &#60;Set&#62; is a palindrome
+&#60;Number&#62; == &#60;Number&#62;
+&#60;Set&#62; == &#60;Set&#62;
+&#60;Number&#62; >= &#60;Number&#62;
+&#60;Number&#62; <= &#60;Number&#62;
+&#60;Number&#62; > &#60;Number&#62;
+&#60;Number&#62; < &#60;Number&#62;
+&#60;Condition&#62; and &#60;Condition&#62;
+&#60;Condition&#62; or &#60;Condition&#62;
+not &#60;Condition&#62;
+&#60;Set1&#62; contains &#60;Set2&#62;                 |  Whether any element of &#60;Set2&#62; can be found anywhere in &#60;Set1&#62; eg. {'hello'} contains {'hell'} -> True
+&#60;Set1&#62; contains &#60;Set2&#62; case sensitive
+&#60;Set1&#62; is subset of &#60;Set2&#62;             |  &#60;Set1&#62; is subset of &#60;Set2&#62; eg. ["dog", "cat", "llama"] is subset of animals -> True
+&#60;Set1&#62; is case sensitive subset of &#60;Set2&#62;
+&#60;Set&#62; is lowercase                     |  Checks whether everything in &#60;Set&#62; is lowercase. Ignores numbers
+&#60;Set&#62; is uppercase                     |  Checks whether everything in &#60;Set&#62; is uppercase. Ignores numbers
+
+Operations:
+Output    |  How to use                               |  Description
+
+&#60;Set&#62;     |  every (n)th &#60;Set&#62;                        |  eg. every 2nd word - ["the", "quick", "brown", "fox"] -> ["quick", "fox"]
+&#60;Set&#62;     |  (n)th &#60;Set&#62;                              |  &#60;Set&#62;[n]
+&#60;Set&#62;     |  letters of &#60;Set&#62;                         |  ["the", "he"] -> ["t", "h", "e", "h", "e"]
+&#60;Number&#62;  |  length of &#60;Set&#62;                          |  Length of set. length of sentence -> 1, length of words -> number of words
+&#60;Number&#62;  |  sum of &#60;Set&#62;                             |  Sum of letters in set, a=A=1, b=B=2, 1=1, 2=2
+&#60;Number&#62;  |  location of &#60;Set1&#62; in &#60;Set2&#62;             |  Case sensitive location of &#60;Set1&#62; in &#60;Set2&#62;, or -1 if it's not inside
+&#60;Set&#62;     |  &#60;Set1&#62; intersect &#60;Set2&#62;                  |  &#60;Set1&#62; n &#60;Set2&#62; (case sensitive)
+&#60;Set&#62;     |  &#60;Set1&#62; union &#60;Set2&#62;                      |  &#60;Set1&#62; U &#60;Set2&#62; Repeats are added a second time  (case sensitive)
+&#60;Set&#62;     |  &#60;Set1&#62; - &#60;Set2&#62;                          |  &#60;Set1&#62; \ &#60;Set2&#62;
+&#60;Number&#62;  |  &#60;Number1&#62; - &#60;Number2&#62;
+&#60;Number&#62;  |  &#60;Number&#62; + &#60;Number&#62;
+&#60;Number&#62;  |  &#60;Number1&#62; mod &#60;Number2&#62;                  |  &#60;Number1&#62; % &#60;Number2&#62;
+&#60;Number&#62;  |  (&#60;Set&#62; s#)[Condition]                    |  Checks condition for any s, eg. (word s1)[s1 is palindrome]
+&#60;Set&#62;     |  lowercase of &#60;Set&#62;                       |  Makes &#60;Set&#62; lowercase
+&#60;Set&#62;     |  uppercase of &#60;Set&#62;                       |  Makes &#60;Set&#62; uppercase
+&#60;Number&#62;  |  (&#60;Set&#62; s#, &#60;Location&#62; l#)[&#60;Condition&#62;]   |  Checks &#60;Condition&#62; for any s and related l, eg. (word s1, next l1)[(sum of s1) > (sum of l1)], and returns the number of times the &#60;Condition&#62; is satisfied
+
+Number:
+...
+-1
+0
+1
+2
+...
+
+Level:
+Sentence  |  The entire sentence       |  "The quick brown" -> {"The quick brown"}
+Word      |  Every word in sentence    |  "The quick brown" -> {"The", "quick", "brown"}
+Letter    |  Every letter in sentence  |  "The quick brown" -> {'T', 'h', 'e', 'q', 'u' ...}
+Words     |  Same as Word, and can be used interchangeably
+Letters   |  Same as Letter, and can be used interchangeably
+
+Location:
+Next
+Previous
+Last
+First
+Opposite
+					</font></p>
+
+				</div>
+
+				<p>
+
+					What if we want to make a more complicated rule?<br>
+					Let's make the rule "Every second word must contain a vowel".<br>
+					First, we get every second word in the guess, by using a Set operation "every 2nd word"<br>
+					We need to check for each word, so we'll use (&#60;Set&#62; s#, &#60;Location&#62; l#)[Condition]. This is a powerful operation which goes through the &#60;Set&#62;, using s# as each element in turn, with l# relative to s#. It then returns the number of times the condition was met.<br>
+					s# and l# are how we decide to refer to the nth element and relative location, eg. (&#60;Set&#62; s1, &#60;Location&#62; l1)[some condition with s1 and l1]<br>
+					To set up the part inside parentheses:<br>
+					&emsp;We will put "(every 2nd word)" as the &#60;Set&#62;.<br>
+					&emsp;We can decide to reference the element as s1<br>
+					&emsp;We're not using the relative location, so we can just skip it<br>
+					&emsp;The condition is that the word has a vowel, so "s1 contains vowel"<br>
+					So now we have "((every 2nd word) s1)[s1 contains vowel]"<br>
+					We now need a boolean value, by checking if the number of matches equals the number of words we're checking.<br>
+					Adding this together: ((every 2nd word) s1)[s1 contains vowel] == (length of (every 2nd word))<br>
+				</p>
+				<p>
+					A quick note about using (&#60;Set&#62; s#, &#60;Location&#62; l#)[&#60;Condition&#62;]: The maximum value, which is what it returns if the condition is met every time, will be one less when using Locations next and previous. This is because it can't check the last value when using Next, or the first value when using Previous, else there would be no location to compare to. Because of this, be sure to check against ((length of word) - 1) or less when using either of these &#60;Location&#62;s<br>
+				</p>
+
+				<p>
+					The bot commands are the user's way of interfacing with the bot. These can be found through Discord commands but are also below if you'd like to see a list and short description.
+				</p>
+
+				<div class="toggle_picture" onclick="togglePicture('bot_commands')">Bot Commands</div>
+				<div onclick="togglePicture('bot_commands')" id="bot_commands" class="toggle">
+
+					<p>
+						The bot commands are the user's way of interfacing with the bot. Commands begin with an '!' or '?'
+					</p>
+
+					<img src="Text Zendo Pictures/help.PNG" alt="Help Command" style="max-width:100%">
+
+					<p>
+						When every user enters the Server, they are added to a private work area where they can create and test rules without others being able to see them. When they are ready, they can use the "makekey" rule to get a key which points to that rule. They can then use that key to set the rule in other channels without typing the rule into that channel, which would defeat the point of guessing.  
+					</p>
+
+					<p>
+						Here's an example of someone using the "overview" command:
+					</p>
+
+					<img src="Text Zendo Pictures/overview.PNG" alt="Overview Command" style="max-width:100%">
+
+				</div>
+
+				<br>
+
+				<a class="alwaysBlue" href="../index.html">&#8592; Back</a>
+
+			</div>
+
+			<div id="right">
+
+				<img src="../logo.png" width="80px" height="50px" style="object-fit: cover;">
+				<h2>Matthew Zirbel</h2>
+
+				<a class="navlink" href="../index.html">About Me</a>
+				<br>
+				<b>Projects:</b>
+				<br>
+				<a class="navlink" href="one_night_cardless.html">One Night Cardless</a>
+				<br>
+				<span id="current_page_sidebar">Text Based Zendo</span>
+				<br>
+				<a class="navlink" href="room_lights.html">Room Lights</a>
+				<br>
+				<a class="navlink" href="lock_system.html">Lock System</a>
+				<br>
+				<a class="navlink" href="youtube_pauser.html">YouTube Pauser</a>
+				<br>
+				<a class="navlink" href="old_projects.html">Old Projects</a>
+				<br>
+
+			</div>
+
+		</div>
+
+	</body>
+
+</html>

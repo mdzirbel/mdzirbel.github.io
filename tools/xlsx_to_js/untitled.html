@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XLSX to JS Converter</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <h1>Upload XLSX and Get a JS File</h1>
+
+    <!-- File Input -->
+    <input type="file" id="fileInput" accept=".xlsx" />
+    <br><br>
+
+    <!-- Download Link -->
+    <a id="downloadLink" style="display:none;">Download JS File</a>
+
+    <script>
+        document.getElementById('fileInput').addEventListener('change', handleFile, false);
+
+        function handleFile(e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+
+                // Convert the workbook to JSON object
+                const result = {};
+                workbook.SheetNames.forEach((sheetName) => {
+                    const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
+                    result[sheetName] = sheet;
+                });
+
+                // Convert the JSON object to JavaScript file content
+                const jsContent = `const excelData = ${JSON.stringify(result, null, 2)};`;
+
+                // Create a Blob and generate a downloadable link
+                const blob = new Blob([jsContent], { type: 'application/javascript' });
+                const downloadLink = document.getElementById('downloadLink');
+                downloadLink.href = URL.createObjectURL(blob);
+                downloadLink.download = 'data.js';
+                downloadLink.style.display = 'block';
+                downloadLink.textContent = 'Download JS File';
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+    </script>
+</body>
+</html>

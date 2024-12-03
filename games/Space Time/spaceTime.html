@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html onkeydown="keyPress(event)">
+<head>
+	<link rel="stylesheet" type="text/css" href="spaceTime.css">
+	<title>Space Time</title>
+</head>
+<body>
+
+<h1>Space Time</h1>
+
+<div class="vertical-menu main">
+	<ol>
+		<li onclick="play()">Play</li>
+		<li onclick="howToPlay()">How To Play</li>
+		<a href="../index.html"><li>Main Site</li></a>
+	</ol>
+</div>
+
+<div class="howToPlay">
+Navigate this 3D world!<br><br>
+Use the wasd to move through space.<br><br>
+Use space and shift to move through time.<br><br>
+You are in black, "old" you is in gray.<br><br>
+<br><br>
+<div class="vertical-menu center"><ol><li onclick="menuMain('howToPlay')">Back</li></ol></div>
+</div>
+
+<div class="postGame">
+	<div class="yourScore"></div><br>
+	<div class="highscores"></div>
+	<div class="vertical-menu center">
+		<ol>
+			<li onclick="play()">New Game</li>
+			<li onclick="menuMain('postGame')">Main Menu</li>
+		</ol>
+	</div>
+</div>
+
+<canvas id="gameCanvas" onkeypress="keyPress(event)" width="600" height="700"></canvas>
+
+</body>
+
+<script src="../jquery-3.2.1.min.js"></script>
+<script src="spaceTime.js"></script>
+
+</html>

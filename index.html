@@ -1,57 +1,114 @@
-<!doctype html>
+
 <html>
-  <head>
-    <title>Yes on J Sign Map</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="index.css">
 
-    <!-- Toast library -->
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-  </head>
-  <body>
-    <h3>Sonoma County Yes on J sign map</h3>
-    
-    <!-- Checkboxes for filtering by status -->
-    <div class="filters">
-      <label><input type="checkbox" class="status-filter" value="Dropped off" checked> Dropped off (<span id="Dropped-off-count">0</span>)</label>
-      <label><input type="checkbox" class="status-filter" value="Wait to drop off" checked> Wait to drop off (<span id="Wait-to-drop-off-count">0</span>)</label>
-      <label><input type="checkbox" class="status-filter" value="Dropoff time needs review" checked> Dropoff time needs review (<span id="Dropoff-time-needs-review-count">0</span>)</label>
-      <label><input type="checkbox" class="status-filter" value="Ready to drop off" checked> Ready to drop off (<span id="Ready-to-drop-off-count">0</span>)</label>
-      <label><input type="checkbox" class="status-filter" value="Not SoCo"> Not SoCo (<span id="Not-SoCo-count">0</span>)</label>
-      <label><input type="checkbox" class="status-filter" value="Delivery Assigned" checked> Delivery Assigned (<span id="Delivery-Assigned-count">0</span>)</label>
-      <label><input type="checkbox" class="status-filter" value="Refused" checked> Refused (<span id="Refused-count">0</span>)</label>
-    </div>
+	<head>
+		<title>Matthew Zirbel</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="stylesheet" type="text/css" href="mainStyle.css">
+		<link rel="icon" href="logo.png">
+		<script src="main.js"></script>
+	</head>
 
-    <!--The div element for the map -->
-    <div id="map"></div>
+	<body>
 
-    <!-- Button to clear all selections -->
-    <button onclick="clearSelectedMarkers()">Clear Selections</button>
+		<div id="main">
 
-    <!-- Section to display the cards for selected markers -->
-    <div id="direction-container"></div>
-    <div id="status-card-container"></div>
+			<div id="left">
+				
+				<a name="aboutme"></a>
+				<h2>About me</h2>
 
-    <table id="marker-info-table" border="1">
-      <thead>
-        <tr>
-          <th>Address</th>
-          <th>What they want</th>
-          <th>Notes</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Table rows will be added here dynamically -->
-      </tbody>
-    </table>
+				<p>
+					I'm a Senior at Ohio State University studying Computer Science.<br>
+					I enjoy programming, reading, computer games, and webcomics.
+				</p>
+				<p>
+					My website is a list and description of some of my programming projects.<br>
+					You can also find most of my coding projects on my <a href="https://github.com/mdzirbel">Github</a>
+				</p>
+				<p>
+					You can reach me at: <br>
+					Email: matthew.d.zirbel@gmail.com<br>
+					Phone: (614) 636-1743
+				</p>
 
-    <!-- Google Maps API script with callback to initMap -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDh61xjmmO-NHGpdhWMWQLYqRz0Y9XU0Ps&callback=initMap&v=weekly" 
-      async defer></script>
-    
-    <script src="map.js"></script>
-    <script src="selection.js"></script>
-  </body>
+				<h2>My Projects</h2>
+
+
+				<a href="Projects/one_night_cardless.html"><h3>One Night Cardless</h3></a>
+				<p>
+					I made an Android app, called One Night Cardless, to play One Night Werewolf without the cards. It does the night phase of One Night Werewolf faster, simpler, and without needing to close your eyes. You can install the Android app <a href="https://play.google.com/store/apps/details?id=mdzirbel.werewolf">here</a>.
+				</p>
+
+
+				<a href="Projects/text_zendo.html"><h3>Text Based Zendo</h3></a>
+				<p>
+					Text based Zendo is based around the base game Zendo, adapted to be played with only text. Text-Zendo is a game about reverse-engineering a rule by checking strings and whether they match the rule. The game is hosted on Discord, with the Python bot I made, and uses a context free grammar to parse rules which are approximately human-readable, then automatically checks guesses against these rules. You can join the Discord <a href="https://discord.gg/KZTy4E4">here</a>
+				</p>
+
+
+				<a href="Projects/room_lights.html"><h3>Room Lights</h3></a>
+				<p>
+					My roommate <a href="https://maxfojtik.github.io/">Max</a> and I found the lighting in our dorm room to be somewhat disappointing. We also liked the idea of using LED strips to light our room. So we made a system of LED strips to light our room. We use the LEDs for our everyday lighting and they're brighter and more cheerful than the room's yellowish light. 
+				</p>
+
+
+				<a href="Projects/lock_system.html"><h3>Lock System</h3></a>
+				<p>
+					We decided to automate the door as well as our lighting, so we set up a Raspberry Pi and servo on the door to control that too. The idea was to be able to unlock the door without needing a key while also not leaving it unlocked when we were away.
+				</p>
+
+
+				<a href="Projects/youtube_pauser.html"><h3>YouTube Pauser</h3></a>
+				<p>
+					I made a Chrome/Firefox extension to pause YouTube from any tab. It toggles playing in the leftmost YouTube tab when you click on it, and skips when you double click. The icon shows the current time over the total time.
+				</p>
+				<p>
+					You can add it to <a href="https://chrome.google.com/webstore/detail/youtube-pauser/ocbjhmfcfglemljibkmppgppknanmkdl?hl=en">Chrome</a> or  <a href="https://addons.mozilla.org/en-US/firefox/addon/youtube-pauseandskip/">Firefox</a>.
+				</p>
+
+
+				<a href="Projects/old_projects.html"><h3>Old Projects</h3></a>
+				<p>
+					Some of my first JS and HTML projects were made in High School. 
+					<br><br>
+					<a href = Traffic/traffic.html>Traffic</a> is a simple JavaScript game of fast dodging. Use the arrow keys to dodge and use the powerups. 
+					<!-- high score is 19.32 -->
+					<br><br>
+
+					<a href = Pool/pool.html>Knockout Pool</a> is a multiplayer JavaScript game a bit like pool. The goal is to be the last person with balls. 
+					<br><br>
+					<a href = "Space Time/spaceTime.html">Space Time</a> is a JavaScript game I barely started, so it's quite unfinished.
+				</p>
+
+			</div>
+
+			<div id="right">
+
+				<img src="logo.png" width="80px" height="50px" style="object-fit: cover;">
+				<h2>Matthew Zirbel</h2>
+
+				<span id="current_page_sidebar">About Me</span>
+				<br>
+				<b>Projects:</b>
+				<br>
+				<a class="navlink" href="Projects/one_night_cardless.html">One Night Cardless</a>
+				<br>
+				<a class="navlink" href="Projects/text_zendo.html">Text Based Zendo</a>
+				<br>
+				<a class="navlink" href="Projects/room_lights.html">Room Lights</a>
+				<br>
+				<a class="navlink" href="Projects/lock_system.html">Lock System</a>
+				<br>
+				<a class="navlink" href="Projects/youtube_pauser.html">YouTube Pauser</a>
+				<br>
+				<a class="navlink" href="Projects/old_projects.html">Old Projects</a>
+				<br>
+
+			</div>
+
+		</div>
+
+	</body>
+
 </html>
-

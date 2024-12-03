@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Yes on J Sign Map</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="index.css">
+
+    <!-- Toast library -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+  </head>
+  <body>
+    <h3>Sonoma County Yes on J sign map</h3>
+    
+    <!-- Checkboxes for filtering by status -->
+    <div class="filters">
+      <label><input type="checkbox" class="status-filter" value="Dropped off" checked> Dropped off (<span id="Dropped-off-count">0</span>)</label>
+      <label><input type="checkbox" class="status-filter" value="Wait to drop off" checked> Wait to drop off (<span id="Wait-to-drop-off-count">0</span>)</label>
+      <label><input type="checkbox" class="status-filter" value="Dropoff time needs review" checked> Dropoff time needs review (<span id="Dropoff-time-needs-review-count">0</span>)</label>
+      <label><input type="checkbox" class="status-filter" value="Ready to drop off" checked> Ready to drop off (<span id="Ready-to-drop-off-count">0</span>)</label>
+      <label><input type="checkbox" class="status-filter" value="Not SoCo"> Not SoCo (<span id="Not-SoCo-count">0</span>)</label>
+      <label><input type="checkbox" class="status-filter" value="Delivery Assigned" checked> Delivery Assigned (<span id="Delivery-Assigned-count">0</span>)</label>
+      <label><input type="checkbox" class="status-filter" value="Refused" checked> Refused (<span id="Refused-count">0</span>)</label>
+    </div>
+
+    <!--The div element for the map -->
+    <div id="map"></div>
+
+    <!-- Button to clear all selections -->
+    <button onclick="clearSelectedMarkers()">Clear Selections</button>
+
+    <!-- Section to display the cards for selected markers -->
+    <div id="direction-container"></div>
+    <div id="status-card-container"></div>
+
+    <!-- Dropdown to set status for all selected markers -->
+    <div>
+      <label for="bulk-status-select"><span class="highlight">Set status for selected markers:</span></label>
+      <select id="bulk-status-select">
+        <option value="Dropped off">Mark delivered</option>
+        <option value="Delivery Assigned">Mark assigned</option>
+      </select>
+      <button onclick="setStatusForSelectedMarkers()">Apply</button>
+    </div>
+
+
+    <table id="marker-info-table" border="1">
+      <thead>
+        <tr>
+          <th>Address</th>
+          <th>City</th>
+          <th>What they want</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Table rows will be added here dynamically -->
+      </tbody>
+    </table>
+
+    <!-- Google Maps API script with callback to initMap -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDh61xjmmO-NHGpdhWMWQLYqRz0Y9XU0Ps&callback=initMap&v=weekly" 
+      async defer></script>
+    
+    <script src="map.js"></script>
+    <script src="selection.js"></script>
+  </body>
+</html>
+

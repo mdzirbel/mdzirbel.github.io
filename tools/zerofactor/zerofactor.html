@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>2FA Code</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f0f0f0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+      .container {
+        background: #fff;
+        padding: 40px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        text-align: center;
+      }
+      .title {
+        font-size: 1.2rem;
+        margin-bottom: 20px;
+      }
+      .code-box {
+        font-size: 2rem;
+        font-weight: bold;
+        border: 2px dashed #ddd;
+        padding: 10px 20px;
+        display: inline-block;
+        margin-bottom: 20px;
+      }
+      .reload-button {
+        background-color: #007bff;
+        color: #fff;
+        padding: 10px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .reload-button:hover {
+        background-color: #0056b3;
+      }
+      .reload-button svg {
+        width: 24px;
+        height: 24px;
+      }
+      /* Simple fade-in style for user feedback */
+      .fade-in {
+        animation: fadeIn 0.3s forwards;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="title">Your two factor authentication code is</div>
+      <div class="code-box fade-in" id="code">Loading...</div>
+      <button class="reload-button" id="reloadBtn" title="Regenerate Code">
+        <!-- Refresh icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" 
+             stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <path d="M20.49 9A8.63 8.63 0 1 0 21 16.86"></path>
+        </svg>
+      </button>
+    </div>
+
+    <script>
+      const codeElement = document.getElementById("code");
+      const reloadBtn = document.getElementById("reloadBtn");
+
+      // Optionally, fetch the code from Lambda on page load
+      callLambda();
+
+      // On button click, call Lambda again to get a new code
+      reloadBtn.addEventListener("click", callLambda);
+
+      function callLambda() {
+        // Show "Loading..." while fetching
+        codeElement.textContent = "Loading...";
+
+        fetch("https://gz6y563vc3.execute-api.us-east-1.amazonaws.com", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ password: "Greg" })
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error("Network response was not ok: " + response.status);
+          }
+          return response.json();
+        })
+        .then(data => {
+          // Replace data.code below with the actual field your Lambda returns
+          codeElement.textContent = data.code || "No code in response";
+        })
+        .catch(error => {
+          console.error("Error:", error);
+          codeElement.textContent = "Error fetching code";
+        });
+      }
+    </script>
+  </body>
+</html>

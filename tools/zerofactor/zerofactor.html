@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>2FA Code with Password Storage</title>
+    <title>2FA Code with Password Storage & Universal TOTP Timer</title>
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -92,7 +92,6 @@
         font-weight: bold;
       }
 
-      /* We'll keep the code text and progress bar separate for simpler reloading. */
       .code-box {
         font-size: 1.8rem;
         font-weight: bold;
@@ -105,7 +104,7 @@
         margin-bottom: 10px;
         width: 100%;
         box-sizing: border-box;
-        cursor: pointer; /* Cursor changes on hover */
+        cursor: pointer; /* cursor changes on hover */
         position: relative;
       }
       .code-box:hover {
@@ -253,32 +252,45 @@
       });
 
       /*******************
-       * 2FA TIMER
+       * TOTP UNIVERSAL TIMER
        *******************/
-      const TIME_STEP = 30; // 30 seconds for standard TOTP intervals
-      let timeLeft    = TIME_STEP;
+      // Return how many seconds remain until the next 30s boundary.
+      function getTimeLeft() {
+        const epochSeconds = Math.floor(Date.now() / 1000);
+        return 30 - (epochSeconds % 30);
+      }
+
+      let previousTimeLeft = getTimeLeft();
       let countdownInterval;
 
       function startTimer() {
-        // Clear any old interval
         clearInterval(countdownInterval);
 
-        timeLeft = TIME_STEP;
-        updateProgressBar(timeLeft);
+        // Recalc right away, in case we called startTimer at the wrong second
+        previousTimeLeft = getTimeLeft();
+        updateProgressBar(previousTimeLeft);
 
         countdownInterval = setInterval(() => {
-          timeLeft--;
-          updateProgressBar(timeLeft);
+          // Recalculate each second
+          const currentTimeLeft = getTimeLeft();
+          updateProgressBar(currentTimeLeft);
 
-          if (timeLeft <= 0) {
+          // If we've rolled over from e.g. 1 -> 30, that means the universal TOTP
+          // interval just changed. We'll refresh the code automatically.
+          if (currentTimeLeft > previousTimeLeft) {
+            // We crossed the boundary
             clearInterval(countdownInterval);
-            callLambda(); // Automatically refresh the code
+            callLambda();
           }
+
+          previousTimeLeft = currentTimeLeft;
         }, 1000);
       }
 
       function updateProgressBar(remaining) {
-        const fraction = remaining / TIME_STEP;
+        // remaining goes from e.g. 30 -> 1
+        // fraction = remaining / 30
+        const fraction = remaining / 30;
         progressBarElement.style.width = (fraction * 100) + "%";
       }
 
@@ -286,7 +298,7 @@
        * FETCH CODE
        *******************/
       function callLambda() {
-        // Clear the code box first (instead of "Loading...")
+        // Clear the code box
         codeText.textContent = "";
 
         const userPassword = passwordInput.value.trim();
@@ -305,7 +317,7 @@
         .then(data => {
           // Put the code in the box
           codeText.textContent = data.code || "No code in response";
-          // Restart the timer
+          // Restart the universal TOTP timer
           startTimer();
         })
         .catch(error => {
@@ -322,13 +334,9 @@
        *******************/
       function copyToClipboard(text) {
         if (!text) return;
-        navigator.clipboard.writeText(text)
-          .then(() => {
-            console.log("Copied to clipboard:", text);
-          })
-          .catch(err => {
-            console.error("Failed to copy:", err);
-          });
+        navigator.clipboard.writeText(text).catch(err => {
+          console.error("Failed to copy:", err);
+        });
       }
 
       // Clicking the code box itself copies it

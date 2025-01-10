@@ -91,22 +91,28 @@
         margin-bottom: 10px;
         font-weight: bold;
       }
+
+      /* We'll keep the code text and progress bar separate for simpler reloading. */
       .code-box {
         font-size: 1.8rem;
         font-weight: bold;
         border: 2px dashed #ddd;
         padding: 10px 20px;
-        display: inline-block;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 40px; /* a bit of height even when empty */
         margin-bottom: 10px;
         width: 100%;
         box-sizing: border-box;
         cursor: pointer; /* Cursor changes on hover */
-        position: relative; /* For progress bar overlay */
+        position: relative;
       }
       .code-box:hover {
         background-color: #fafafa;
       }
-      /* Progress bar container inside the code box */
+
+      /* Progress bar sits at the bottom of the code box */
       .progress-container {
         position: absolute;
         bottom: 0;
@@ -116,7 +122,6 @@
         background-color: #ddd;
         overflow: hidden;
       }
-      /* Actual bar that shrinks or grows */
       .progress-bar {
         height: 100%;
         width: 100%;
@@ -182,9 +187,9 @@
         Your Two-Factor Authentication Code
       </div>
 
-      <!-- The code box (clickable, with progress bar overlay) -->
-      <div class="code-box fade-in" id="code">
-        Loading...
+      <!-- The code box (clickable). We keep a nested <span> to easily set its textContent -->
+      <div class="code-box fade-in" id="codeBox">
+        <span id="codeText"></span>
         <div class="progress-container">
           <div class="progress-bar" id="progressBar"></div>
         </div>
@@ -210,7 +215,8 @@
       /*******************
        * DOM ELEMENTS
        *******************/
-      const codeElement         = document.getElementById("code");
+      const codeBox             = document.getElementById("codeBox");
+      const codeText            = document.getElementById("codeText");
       const progressBarElement  = document.getElementById("progressBar");
       const reloadBtn           = document.getElementById("reloadBtn");
       const copyBtn             = document.getElementById("copyBtn");
@@ -280,11 +286,8 @@
        * FETCH CODE
        *******************/
       function callLambda() {
-        // Show "Loading..." while fetching
-        codeElement.textContent = "Loading...";
-
-        // Keep the progress bar behind it
-        codeElement.appendChild(document.querySelector(".progress-container"));
+        // Clear the code box first (instead of "Loading...")
+        codeText.textContent = "";
 
         const userPassword = passwordInput.value.trim();
 
@@ -301,18 +304,14 @@
         })
         .then(data => {
           // Put the code in the box
-          codeElement.textContent = data.code || "No code in response";
-          // Re-attach the progress bar overlay
-          codeElement.appendChild(document.querySelector(".progress-container"));
-
+          codeText.textContent = data.code || "No code in response";
           // Restart the timer
           startTimer();
         })
         .catch(error => {
           console.error("Error:", error);
-          codeElement.textContent = "Error fetching code";
-
-          // Optionally, you could stop the timer if there's an error
+          codeText.textContent = "Error fetching code";
+          // Optionally, stop the timer if there's an error
           clearInterval(countdownInterval);
           updateProgressBar(0);
         });
@@ -322,9 +321,9 @@
        * COPY BEHAVIOR
        *******************/
       function copyToClipboard(text) {
+        if (!text) return;
         navigator.clipboard.writeText(text)
           .then(() => {
-            // Could show a small "Copied!" message if desired
             console.log("Copied to clipboard:", text);
           })
           .catch(err => {
@@ -332,14 +331,14 @@
           });
       }
 
-      // Clicking the code itself copies it
-      codeElement.addEventListener("click", () => {
-        copyToClipboard(codeElement.textContent.trim());
+      // Clicking the code box itself copies it
+      codeBox.addEventListener("click", () => {
+        copyToClipboard(codeText.textContent.trim());
       });
 
       // Copy button also copies it
       copyBtn.addEventListener("click", () => {
-        copyToClipboard(codeElement.textContent.trim());
+        copyToClipboard(codeText.textContent.trim());
       });
 
       /*******************

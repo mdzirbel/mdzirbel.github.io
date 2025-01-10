@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>2FA Code with Password Storage & Universal TOTP Timer</title>
+    <title>2FA Code with URL Password</title>
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -22,68 +22,35 @@
         text-align: center;
         width: 350px;
       }
-      .password-section {
-        margin-bottom: 20px;
-      }
-      .slider-container {
-        margin-bottom: 10px;
+
+      /* Inline password row */
+      .password-row {
         display: flex;
         align-items: center;
         justify-content: center;
+        margin-bottom: 20px;
       }
-      .slider-label {
-        margin-right: 10px;
-      }
-      /* Slider styling */
-      .switch {
-        position: relative;
-        display: inline-block;
-        width: 44px;
-        height: 24px;
-      }
-      .switch input {
-        opacity: 0;
-        width: 0;
-        height: 0;
-      }
-      .slider {
-        position: absolute;
-        cursor: pointer;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background-color: #ccc;
-        transition: .4s;
-        border-radius: 24px;
-      }
-      .slider:before {
-        position: absolute;
-        content: "";
-        height: 16px;
-        width: 16px;
-        left: 4px;
-        bottom: 4px;
-        background-color: white;
-        transition: .4s;
-        border-radius: 50%;
-      }
-      input:checked + .slider {
-        background-color: #007bff;
-      }
-      input:checked + .slider:before {
-        transform: translateX(20px);
-      }
-
-      .password-label {
-        display: block;
-        margin-bottom: 5px;
+      .password-row label {
+        margin-right: 8px;
         font-weight: bold;
       }
-      .password-input {
+      .password-row input[type="password"] {
         font-size: 1rem;
-        padding: 8px;
+        padding: 6px;
         border: 1px solid #ddd;
         border-radius: 4px;
-        width: 100%;
-        box-sizing: border-box;
+        margin-right: 6px;
+      }
+      .password-row button {
+        background-color: #007bff;
+        color: #fff;
+        padding: 6px 10px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .password-row button:hover {
+        background-color: #0056b3;
       }
 
       .title {
@@ -131,23 +98,16 @@
       .button-row {
         margin-top: 10px;
       }
-      .copy-button,
-      .reload-button {
+      .copy-button {
         background-color: #007bff;
         color: #fff;
         padding: 8px 12px;
         border: none;
         border-radius: 4px;
         cursor: pointer;
-        margin: 0 5px;
       }
-      .copy-button:hover,
-      .reload-button:hover {
+      .copy-button:hover {
         background-color: #0056b3;
-      }
-      .reload-button svg {
-        width: 24px;
-        height: 24px;
       }
 
       /* Simple fade-in style for user feedback */
@@ -163,25 +123,17 @@
   <body>
     <div class="container">
 
-      <!-- Password storage toggle + input -->
-      <div class="password-section">
-        <div class="slider-container">
-          <span class="slider-label">Store Password?</span>
-          <label class="switch">
-            <input type="checkbox" id="storePasswordSlider" />
-            <span class="slider"></span>
-          </label>
-        </div>
-        <label class="password-label" for="passwordInput">Password</label>
+      <!-- Password form (hidden if a 'password' query param is present) -->
+      <form id="passwordForm" class="password-row" onsubmit="event.preventDefault(); setPasswordInUrl();">
+        <label for="passwordInput">Password</label>
         <input
           type="password"
           id="passwordInput"
-          class="password-input"
           placeholder="Enter Password"
         />
-      </div>
+        <button type="submit" id="submitBtn">Submit</button>
+      </form>
 
-      <!-- Title above the code -->
       <div class="title" id="codeTitle">
         Your Two-Factor Authentication Code
       </div>
@@ -194,67 +146,54 @@
         </div>
       </div>
 
-      <!-- Copy and reload buttons below -->
+      <!-- Copy button below -->
       <div class="button-row">
         <button class="copy-button" id="copyBtn" title="Copy Code">
           Copy
-        </button>
-        <button class="reload-button" id="reloadBtn" title="Regenerate Code">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2" stroke-linecap="round"
-               stroke-linejoin="round">
-            <polyline points="23 4 23 10 17 10"></polyline>
-            <path d="M20.49 9A8.63 8.63 0 1 0 21 16.86"></path>
-          </svg>
         </button>
       </div>
     </div>
 
     <script>
       /*******************
+       * URL PARAMS
+       *******************/
+      function getQueryParam(name) {
+        const params = new URLSearchParams(window.location.search);
+        return params.get(name);
+      }
+
+      // If the URL has ?password=..., we use that directly
+      const passwordFromUrl = getQueryParam("password") || "";
+
+      // A helper to set the password in the query param, reloading the page:
+      function setPasswordInUrl() {
+        const pwd = document.getElementById("passwordInput").value.trim();
+        if (!pwd) return;
+        const baseUrl = window.location.origin + window.location.pathname; 
+        // Replace existing query string with just ?password=...
+        const newUrl = baseUrl + "?password=" + encodeURIComponent(pwd);
+        window.location.replace(newUrl);
+      }
+
+      /*******************
        * DOM ELEMENTS
        *******************/
+      const passwordForm        = document.getElementById("passwordForm");
+      const passwordInput       = document.getElementById("passwordInput");
       const codeBox             = document.getElementById("codeBox");
       const codeText            = document.getElementById("codeText");
       const progressBarElement  = document.getElementById("progressBar");
-      const reloadBtn           = document.getElementById("reloadBtn");
       const copyBtn             = document.getElementById("copyBtn");
-      const storePasswordSlider = document.getElementById("storePasswordSlider");
-      const passwordInput       = document.getElementById("passwordInput");
 
-      /*******************
-       * LOCAL STORAGE
-       *******************/
-      // On page load, read local storage for slider state & stored password
-      const storedSliderState = localStorage.getItem("storePasswordEnabled");
-      if (storedSliderState === "true") {
-        storePasswordSlider.checked = true;
-        passwordInput.value = localStorage.getItem("storedPassword") || "";
-      } else {
-        storePasswordSlider.checked = false;
+      // If there's already a password param, hide the form entirely
+      if (passwordFromUrl) {
+        passwordForm.style.display = "none";
       }
-
-      // Keep local storage in sync
-      storePasswordSlider.addEventListener("change", () => {
-        if (storePasswordSlider.checked) {
-          localStorage.setItem("storePasswordEnabled", "true");
-          localStorage.setItem("storedPassword", passwordInput.value);
-        } else {
-          localStorage.setItem("storePasswordEnabled", "false");
-          localStorage.removeItem("storedPassword");
-        }
-      });
-
-      passwordInput.addEventListener("input", () => {
-        if (storePasswordSlider.checked) {
-          localStorage.setItem("storedPassword", passwordInput.value);
-        }
-      });
 
       /*******************
        * TOTP UNIVERSAL TIMER
        *******************/
-      // Return how many seconds remain until the next 30s boundary.
       function getTimeLeft() {
         const epochSeconds = Math.floor(Date.now() / 1000);
         return 30 - (epochSeconds % 30);
@@ -266,30 +205,24 @@
       function startTimer() {
         clearInterval(countdownInterval);
 
-        // Recalc right away, in case we called startTimer at the wrong second
+        // Recalc right away
         previousTimeLeft = getTimeLeft();
         updateProgressBar(previousTimeLeft);
 
         countdownInterval = setInterval(() => {
-          // Recalculate each second
           const currentTimeLeft = getTimeLeft();
           updateProgressBar(currentTimeLeft);
 
-          // If we've rolled over from e.g. 1 -> 30, that means the universal TOTP
-          // interval just changed. We'll refresh the code automatically.
+          // If we jump from e.g. 1 -> 30, we crossed a boundary => new code
           if (currentTimeLeft > previousTimeLeft) {
-            // We crossed the boundary
             clearInterval(countdownInterval);
             callLambda();
           }
-
           previousTimeLeft = currentTimeLeft;
         }, 1000);
       }
 
       function updateProgressBar(remaining) {
-        // remaining goes from e.g. 30 -> 1
-        // fraction = remaining / 30
         const fraction = remaining / 30;
         progressBarElement.style.width = (fraction * 100) + "%";
       }
@@ -298,10 +231,15 @@
        * FETCH CODE
        *******************/
       function callLambda() {
-        // Clear the code box
         codeText.textContent = "";
 
-        const userPassword = passwordInput.value.trim();
+        // Use the URL query param for password if present
+        const userPassword = passwordFromUrl;
+
+        // If there's no password param in the URL, do nothing until user submits
+        if (!userPassword) {
+          return;
+        }
 
         fetch("https://wyhhgjheonwo46fxqwwvt5f7li0mtkfc.lambda-url.us-east-1.on.aws/", {
           method: "POST",
@@ -315,15 +253,12 @@
           return response.json();
         })
         .then(data => {
-          // Put the code in the box
           codeText.textContent = data.code || "No code in response";
-          // Restart the universal TOTP timer
           startTimer();
         })
         .catch(error => {
           console.error("Error:", error);
           codeText.textContent = "Error fetching code";
-          // Optionally, stop the timer if there's an error
           clearInterval(countdownInterval);
           updateProgressBar(0);
         });
@@ -350,14 +285,9 @@
       });
 
       /*******************
-       * RELOAD BUTTON
-       *******************/
-      reloadBtn.addEventListener("click", callLambda);
-
-      /*******************
        * INITIAL LOAD
        *******************/
-      callLambda(); // Grab the code when the page first loads
+      callLambda(); // If there's a password in the URL, immediately fetch the code.
     </script>
   </body>
 </html>

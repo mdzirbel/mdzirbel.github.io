@@ -92,7 +92,7 @@
         fetch("https://wyhhgjheonwo46fxqwwvt5f7li0mtkfc.lambda-url.us-east-1.on.aws/ ", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ password: "Greg" })
+          body: JSON.stringify({ "password": "myPassword1" })
         })
         .then(response => {
           if (!response.ok) {

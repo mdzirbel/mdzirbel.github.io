@@ -120,11 +120,10 @@
     <div class="container">
       <div class="title">Your two factor authentication code is</div>
 
-      <!-- Slider to toggle whether password is stored locally -->
+      <!-- Slider to toggle whether password is stored -->
       <div class="slider-container">
         <span class="slider-label">Store Password?</span>
         <label class="switch">
-          <!-- Default is unchecked (off) -->
           <input type="checkbox" id="storePasswordSlider" />
           <span class="slider"></span>
         </label>
@@ -160,47 +159,40 @@
       const storePasswordSlider = document.getElementById("storePasswordSlider");
       const passwordInput = document.getElementById("passwordInput");
 
-      // Immediately clear local storage if slider is off
-      // (in case user refreshes and it was on previously, we want it off by default)
-      localStorage.removeItem("storedPassword");
+      // On page load, read local storage for slider state & stored password
+      const storedSliderState = localStorage.getItem("storePasswordEnabled");
+      if (storedSliderState === "true") {
+        storePasswordSlider.checked = true;
+        const savedPwd = localStorage.getItem("storedPassword") || "";
+        passwordInput.value = savedPwd;
+      } else {
+        // Default to slider off
+        storePasswordSlider.checked = false;
+      }
 
-      // Listen for changes on the slider
+      // Listen for slider toggles
       storePasswordSlider.addEventListener("change", () => {
         if (storePasswordSlider.checked) {
-          // If user toggles ON, store the current password in local storage
-          // (assuming user has already typed something)
+          // Turned on => store slider state and current password
+          localStorage.setItem("storePasswordEnabled", "true");
           localStorage.setItem("storedPassword", passwordInput.value);
         } else {
-          // If user toggles OFF, clear local storage and keep the input as-is
+          // Turned off => clear slider state + stored password
+          localStorage.setItem("storePasswordEnabled", "false");
           localStorage.removeItem("storedPassword");
         }
       });
 
-      // When user types in the password and slider is ON, update local storage
+      // Whenever user types, if slider is on, keep the stored password updated
       passwordInput.addEventListener("input", () => {
         if (storePasswordSlider.checked) {
           localStorage.setItem("storedPassword", passwordInput.value);
         }
       });
 
-      // This function returns whichever password is relevant:
-      //   - If the slider is ON, use localStorage (the user wants to store it)
-      //   - If the slider is OFF, use what's typed into the input
-      // If there's something stored and the user toggles off, 
-      // we have already removed it in the slider "change" event above.
-      function getPassword() {
-        if (storePasswordSlider.checked) {
-          return localStorage.getItem("storedPassword") || "";
-        } else {
-          return passwordInput.value;
-        }
-      }
-
-      // Fetch the code from your Lambda function
+      // Fetch the code from your Lambda function using what's typed in passwordInput
       function callLambda() {
-        const userPassword = getPassword();
-
-        // Show "Loading..." while fetching
+        const userPassword = passwordInput.value.trim();
         codeElement.textContent = "Loading...";
 
         fetch("https://wyhhgjheonwo46fxqwwvt5f7li0mtkfc.lambda-url.us-east-1.on.aws/", {

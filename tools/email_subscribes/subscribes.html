@@ -48,6 +48,9 @@
 		.drop-zone-label {
 			margin-bottom: 5px;
 			font-weight: bold;
+			display: flex;
+			align-items: center;
+			gap: 8px;
 		}
 
 		#output p {
@@ -97,7 +100,13 @@
 	<div class="inputs-container">
 		<!-- Mailing List -->
 		<div>
-			<div class="drop-zone-label">Mailing list CSV</div>
+			<div class="drop-zone-label">
+				Mailing list CSV
+				<a href="https://mc.sendgrid.com/contacts/segments/b1c690c4-1e9d-4edc-9cc1-c5a26bc473bc"
+					target="_blank">
+					(Link to download page)
+				</a>
+			</div>
 			<div class="drop-zone" id="mailingListDropZone">
 				Drop file here or click to select
 			</div>
@@ -106,7 +115,12 @@
 
 		<!-- Unsubscribes -->
 		<div>
-			<div class="drop-zone-label">Unsubscribe CSV</div>
+			<div class="drop-zone-label">
+				Unsubscribe CSV
+				<a href="https://app.sendgrid.com/suppressions/global_unsubscribes" target="_blank">
+					(Link to download page)
+				</a>
+			</div>
 			<div class="drop-zone" id="unsubscribesDropZone">
 				Drop file here or click to select
 			</div>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grayscale PNG Editor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        canvas {
+            border: 1px solid #ccc;
+            margin-top: 20px;
+        }
+        input[type="file"] {
+            margin-bottom: 20px;
+        }
+        #downloadButton {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        #downloadButton:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Grayscale PNG Editor</h1>
+    <input type="file" id="fileInput" accept="image/png">
+    <div>
+        <label for="threshold">Threshold: <span id="thresholdValue">128</span></label>
+        <input type="range" id="threshold" min="0" max="255" value="128">
+    </div>
+    <div>
+        <label for="intensity">Intensity: <span id="intensityValue">1.0</span></label>
+        <input type="range" id="intensity" min="0.1" max="2.0" step="0.1" value="1.0">
+    </div>
+    <canvas id="canvas"></canvas>
+    <button id="downloadButton">Download Processed Image</button>
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const thresholdInput = document.getElementById('threshold');
+        const intensityInput = document.getElementById('intensity');
+        const thresholdValue = document.getElementById('thresholdValue');
+        const intensityValue = document.getElementById('intensityValue');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const downloadButton = document.getElementById('downloadButton');
+
+        let originalImageData;
+
+        fileInput.addEventListener('change', handleFile);
+        thresholdInput.addEventListener('input', updateCanvas);
+        intensityInput.addEventListener('input', updateCanvas);
+        downloadButton.addEventListener('click', downloadImage);
+
+        function handleFile(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = new Image();
+                    img.onload = function () {
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
+                        ctx.drawImage(img, 0, 0);
+                        originalImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                        updateCanvas();
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function updateCanvas() {
+            if (!originalImageData) return;
+
+            const threshold = parseInt(thresholdInput.value, 10);
+            const intensity = parseFloat(intensityInput.value);
+            thresholdValue.textContent = threshold;
+            intensityValue.textContent = intensity.toFixed(1);
+
+            const imageData = new ImageData(
+                new Uint8ClampedArray(originalImageData.data),
+                originalImageData.width,
+                originalImageData.height
+            );
+
+            const data = imageData.data;
+
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
+                const brightness = (r + g + b) / 3;
+
+                if (brightness < threshold) {
+                    const newBrightness = brightness * intensity;
+                    data[i] = newBrightness;
+                    data[i + 1] = newBrightness;
+                    data[i + 2] = newBrightness;
+                } else {
+                    data[i] = 0;      // Explicitly set RGB to 0 for transparent areas
+                    data[i + 1] = 0;
+                    data[i + 2] = 0;
+                    data[i + 3] = 0;  // Fully transparent
+                }
+            }
+
+            ctx.putImageData(imageData, 0, 0);
+        }
+
+        function downloadImage() {
+            const link = document.createElement('a');
+            link.download = 'processed-image.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+    </script>
+</body>
+</html>

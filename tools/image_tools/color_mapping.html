@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Batch Color Mapper (Respect Transparency + Single Color Override)</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 20px;
+      line-height: 1.4;
+    }
+    h1, h2, h3 {
+      margin-top: 1em;
+    }
+    #originalContainer img, #transformedContainer img {
+      margin: 10px;
+      border: 1px solid #ccc;
+      padding: 2px;
+    }
+    .color-entry {
+      display: flex;
+      align-items: center;
+      margin: 5px 0;
+    }
+    .color-box {
+      width: 24px;
+      height: 24px;
+      margin-right: 8px;
+      border: 1px solid #000;
+    }
+    .color-info {
+      margin-right: 20px;
+    }
+    input[type="color"] {
+      margin-right: 8px;
+    }
+    .transparent-toggle {
+      margin-right: 10px;
+    }
+    .label-span {
+      margin-right: 8px;
+    }
+    .download-wrapper {
+      margin-top: 5px;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Batch Color Mapper</h1>
+
+  <!-- 1. Original images (top) -->
+  <h2>Upload Images</h2>
+  <p>Select one or more images to process:</p>
+  <input type="file" id="fileInput" multiple accept="image/*">
+  <div id="originalContainer"></div>
+
+  <!-- 2. Controls: threshold slider, palette, single-color override -->
+  <hr>
+  <h2>Color Grouping Controls</h2>
+  <p>
+    <label for="thresholdSlider">
+      Grouping Threshold: 
+      <strong id="thresholdValue">5</strong>
+    </label>
+  </p>
+  <input
+    type="range"
+    id="thresholdSlider"
+    min="0"
+    max="50"
+    value="5"
+    style="width: 300px;"
+  >
+  <p style="max-width: 600px;">
+    Changing the threshold re-scans and re-groups colors. Any custom color
+    assignments below will be reset, because grouping changes.
+  </p>
+
+  <h3>Detected Color Groups</h3>
+  <div id="paletteContainer"></div>
+
+  <!-- Single-color override -->
+  <h2>Override Non-Transparent Pixels?</h2>
+  <p>
+    <input type="checkbox" id="applySingleColorChk">
+    <label for="applySingleColorChk">
+      If checked, any group not set as transparent becomes this single color:
+    </label>
+  </p>
+  <p>
+    <label for="singleColorInput">Choose Single Color: </label>
+    <input type="color" id="singleColorInput" value="#ff0000" disabled>
+  </p>
+
+  <button id="applyBtn" disabled>Apply Mapping</button>
+
+  <!-- 3. Transformed previews (bottom) -->
+  <hr>
+  <h2>Transformed Previews</h2>
+  <div id="transformedContainer"></div>
+
+  <script>
+    const fileInput              = document.getElementById('fileInput');
+    const thresholdSlider        = document.getElementById('thresholdSlider');
+    const thresholdValue         = document.getElementById('thresholdValue');
+    const originalContainer      = document.getElementById('originalContainer');
+    const paletteContainer       = document.getElementById('paletteContainer');
+    const transformedContainer   = document.getElementById('transformedContainer');
+    const applyBtn               = document.getElementById('applyBtn');
+
+    const applySingleColorChk    = document.getElementById('applySingleColorChk');
+    const singleColorInput       = document.getElementById('singleColorInput');
+
+    // Holds info for each image: { file, originalImage, width, height, pixelData: ImageData }
+    const imageDataList = [];
+
+    // Global color groups: [ { originalColor: [r,g,b], newColor: [r,g,b,a], count: # } ]
+    let groupedColors = [];
+
+    // Current color distance threshold (Euclidean in RGB)
+    let COLOR_THRESHOLD = parseInt(thresholdSlider.value, 10);
+
+    // Is single-color override active?
+    let applySingleColorOverride = false;
+
+    thresholdSlider.addEventListener('input', () => {
+      COLOR_THRESHOLD = parseInt(thresholdSlider.value, 10);
+      thresholdValue.textContent = COLOR_THRESHOLD;
+      if (imageDataList.length > 0) {
+        regroupColors();
+      }
+    });
+
+    fileInput.addEventListener('change', handleFiles);
+    applyBtn.addEventListener('click', applyMapping);
+
+    // Toggle the single-color override
+    applySingleColorChk.addEventListener('change', () => {
+      applySingleColorOverride = applySingleColorChk.checked;
+      singleColorInput.disabled = !applySingleColorOverride;
+    });
+
+
+    // Step 1: Handle file uploads
+    function handleFiles(e) {
+      const files = e.target.files;
+      if (!files || files.length === 0) return;
+
+      // Clear everything for a fresh start
+      originalContainer.innerHTML = '';
+      transformedContainer.innerHTML = '';
+      paletteContainer.innerHTML = '';
+      applyBtn.disabled = true;
+      groupedColors = [];
+      imageDataList.length = 0;
+
+      Array.from(files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = evt => {
+          const img = new Image();
+          img.onload = () => {
+            // Show the original image in the top container
+            originalContainer.appendChild(img);
+
+            // Create a hidden canvas to grab the image's original pixel data
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+
+            // We store *original* pixel data so we can always transform from the original
+            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+            imageDataList.push({
+              file,
+              originalImage: img,
+              width: img.width,
+              height: img.height,
+              pixelData: imgData
+            });
+
+            // Once all files are loaded, do initial grouping
+            if (imageDataList.length === files.length) {
+              regroupColors();
+            }
+          };
+          img.src = evt.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // Step 2: Re-group colors according to threshold
+    function regroupColors() {
+      // Reset everything
+      groupedColors = [];
+      paletteContainer.innerHTML = '';
+      applyBtn.disabled = true;
+
+      // For each image, read its original pixel data and collect colors
+      for (const item of imageDataList) {
+        collectColors(item.pixelData.data);
+      }
+
+      // Build palette UI
+      buildPaletteUI();
+    }
+
+    function collectColors(data) {
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i+1];
+        const b = data[i+2];
+        const a = data[i+3]; // alpha
+
+        // Skip fully transparent
+        if (a === 0) continue;
+
+        const found = groupedColors.find(gp =>
+          colorDistance(gp.originalColor, [r, g, b]) <= COLOR_THRESHOLD
+        );
+        if (found) {
+          found.count++;
+        } else {
+          groupedColors.push({
+            originalColor: [r, g, b],
+            newColor: [r, g, b, 255], // default new color is same, opaque
+            count: 1
+          });
+        }
+      }
+    }
+
+    function buildPaletteUI() {
+      if (groupedColors.length === 0) return;
+
+      // Sort by frequency descending
+      groupedColors.sort((a, b) => b.count - a.count);
+
+      groupedColors.forEach((group) => {
+        const row = document.createElement('div');
+        row.className = 'color-entry';
+
+        // Original color + hex
+        const originalBox = document.createElement('div');
+        originalBox.className = 'color-box';
+        originalBox.style.backgroundColor = `rgb(${group.originalColor.join(',')})`;
+
+        const originalHex = document.createElement('span');
+        originalHex.textContent = rgbToHex(...group.originalColor);
+        originalHex.style.marginLeft = '8px';
+
+        const origWrapper = document.createElement('div');
+        origWrapper.className = 'color-info';
+        origWrapper.textContent = 'Original: ';
+        origWrapper.appendChild(originalBox);
+        origWrapper.appendChild(originalHex);
+
+        // New color input + label
+        const newColorInput = document.createElement('input');
+        newColorInput.type = 'color';
+        newColorInput.value = rgbToHex(
+          group.newColor[0],
+          group.newColor[1],
+          group.newColor[2]
+        );
+
+        const newColorLabel = document.createElement('span');
+        newColorLabel.textContent = newColorInput.value;
+        newColorLabel.style.marginLeft = '8px';
+
+        newColorInput.addEventListener('input', () => {
+          const hex = newColorInput.value;
+          const rgb = hexToRgb(hex);
+          group.newColor[0] = rgb.r;
+          group.newColor[1] = rgb.g;
+          group.newColor[2] = rgb.b;
+          group.newColor[3] = 255; // ensure alpha is fully opaque if color is changed
+          newColorLabel.textContent = hex;
+        });
+
+        // Transparency checkbox
+        const transparentCheck = document.createElement('input');
+        transparentCheck.type = 'checkbox';
+        transparentCheck.className = 'transparent-toggle';
+
+        const transparentLabel = document.createElement('span');
+        transparentLabel.className = 'label-span';
+        transparentLabel.textContent = 'Make Transparent';
+
+        transparentCheck.addEventListener('change', () => {
+          if (transparentCheck.checked) {
+            group.newColor[3] = 0; // alpha = 0
+            newColorInput.disabled = true;
+            newColorLabel.textContent = 'Transparent';
+          } else {
+            group.newColor[3] = 255;
+            newColorInput.disabled = false;
+            newColorLabel.textContent = newColorInput.value;
+          }
+        });
+
+        // Pixel frequency
+        const freqLabel = document.createElement('span');
+        freqLabel.style.marginLeft = '8px';
+        freqLabel.textContent = `(pixels: ${group.count})`;
+
+        const newWrapper = document.createElement('div');
+        newWrapper.className = 'color-info';
+        newWrapper.textContent = 'New: ';
+        newWrapper.appendChild(newColorInput);
+        newWrapper.appendChild(newColorLabel);
+        newWrapper.appendChild(transparentCheck);
+        newWrapper.appendChild(transparentLabel);
+        newWrapper.appendChild(freqLabel);
+
+        row.appendChild(origWrapper);
+        row.appendChild(newWrapper);
+        paletteContainer.appendChild(row);
+      });
+
+      applyBtn.disabled = false;
+    }
+
+    // Step 3: Apply mapping to new previews (bottom), scaling to a fixed preview width
+    function applyMapping() {
+      // Clear out old previews
+      transformedContainer.innerHTML = '';
+
+      // Single-color override chosen by user?
+      const singleColorHex = singleColorInput.value;
+      const singleColorRGB = hexToRgb(singleColorHex);
+
+      // For each image, apply color transformations from the stored original data
+      for (const item of imageDataList) {
+        // 1) Create a new blank ImageData from the original's width/height
+        const width  = item.width;
+        const height = item.height;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width  = width;
+        tempCanvas.height = height;
+        const tempCtx = tempCanvas.getContext('2d');
+
+        // Copy the original pixel data
+        const newImageData = tempCtx.createImageData(width, height);
+        newImageData.data.set(item.pixelData.data);
+
+        // 2) Transform the copied pixels
+        const data = newImageData.data;
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i];
+          const g = data[i+1];
+          const b = data[i+2];
+          const a = data[i+3];
+          if (a === 0) continue; // skip transparent
+
+          // Find the group (to see if it's transparent)
+          const match = groupedColors.find(gc =>
+            colorDistance(gc.originalColor, [r, g, b]) <= COLOR_THRESHOLD
+          );
+
+          if (!match) {
+            // If for some reason no group is found, skip or keep as-is
+            // (Shouldn't happen normally, but just in case)
+            continue;
+          }
+
+          // If the group is set to transparent, respect that
+          if (match.newColor[3] === 0) {
+            data[i+3] = 0; // alpha = 0
+            continue;
+          }
+
+          // If the group is not transparent, either use the group color or the single override
+          if (applySingleColorOverride) {
+            // Force single chosen color
+            data[i]   = singleColorRGB.r;
+            data[i+1] = singleColorRGB.g;
+            data[i+2] = singleColorRGB.b;
+            data[i+3] = 255;
+          } else {
+            // Normal grouping color
+            data[i]   = match.newColor[0];
+            data[i+1] = match.newColor[1];
+            data[i+2] = match.newColor[2];
+            data[i+3] = match.newColor[3];
+          }
+        }
+
+        // Place the transformed data into the temporary canvas
+        tempCtx.putImageData(newImageData, 0, 0);
+
+        // 3) Draw the transformed data onto a *smaller* canvas for final preview
+        const maxPreviewWidth = 200;
+        let previewWidth  = width;
+        let previewHeight = height;
+
+        if (width > maxPreviewWidth) {
+          const scale = maxPreviewWidth / width;
+          previewWidth  = maxPreviewWidth;
+          previewHeight = Math.round(height * scale);
+        }
+
+        const previewCanvas = document.createElement('canvas');
+        previewCanvas.width  = previewWidth;
+        previewCanvas.height = previewHeight;
+        const previewCtx = previewCanvas.getContext('2d');
+
+        // Draw from tempCanvas (full size) onto previewCanvas (smaller)
+        previewCtx.drawImage(tempCanvas, 0, 0, width, height, 0, 0, previewWidth, previewHeight);
+
+        // 4) Convert the previewCanvas to an <img> for display
+        const outputImg = new Image();
+        outputImg.src = previewCanvas.toDataURL('image/png');
+
+        // 5) Create a download link for the preview
+        const downloadLink = document.createElement('a');
+        downloadLink.href = previewCanvas.toDataURL('image/png');
+        downloadLink.download = 'transformed-' + item.file.name;  // e.g. "transformed-myImage.png"
+        downloadLink.textContent = 'Download';
+
+        // Wrap the preview image + download link
+        const wrapper = document.createElement('div');
+        wrapper.className = 'download-wrapper';
+        wrapper.appendChild(outputImg);
+        wrapper.appendChild(document.createElement('br'));
+        wrapper.appendChild(downloadLink);
+
+        transformedContainer.appendChild(wrapper);
+      }
+    }
+
+    // Euclidean distance in RGB
+    function colorDistance([r1, g1, b1], [r2, g2, b2]) {
+      return Math.sqrt((r1 - r2) ** 2 + (g1 - g2) ** 2 + (b1 - b2) ** 2);
+    }
+
+    // Convert (r, g, b) to '#rrggbb'
+    function rgbToHex(r, g, b) {
+      const toHex = x => ('0' + x.toString(16)).slice(-2);
+      return '#' + toHex(r) + toHex(g) + toHex(b);
+    }
+
+    // Convert '#rrggbb' to {r, g, b}
+    function hexToRgb(hex) {
+      const cleanHex = hex.replace('#', '');
+      const bigint = parseInt(cleanHex, 16);
+      return {
+        r: (bigint >> 16) & 255,
+        g: (bigint >> 8) & 255,
+        b: bigint & 255
+      };
+    }
+  </script>
+</body>
+</html>

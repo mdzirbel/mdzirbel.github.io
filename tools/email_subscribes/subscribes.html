@@ -65,10 +65,27 @@
 			border-radius: 5px;
 			cursor: pointer;
 			font-size: 14px;
+			margin-right: 10px;
 		}
 
 		button:hover {
 			background: #45a049;
+		}
+
+		#pastCalculationsTable {
+			border-collapse: collapse;
+			margin-top: 20px;
+			background: #fff;
+		}
+
+		#pastCalculationsTable th,
+		#pastCalculationsTable td {
+			border: 1px solid #ccc;
+			padding: 5px 10px;
+		}
+
+		#pastCalculationsTable th {
+			background: #eaeaea;
 		}
 	</style>
 </head>
@@ -97,29 +114,58 @@
 		</div>
 	</div>
 
-	<button onclick="processFiles()">Process</button>
+	<!-- Action buttons -->
+	<button id="processButton">Process</button>
+	<button id="saveButton">Save to Local Storage</button>
+
+	<!-- Calculation output -->
 	<div id="output" style="margin-top:20px;"></div>
+
+	<!-- Past calculations table -->
+	<h2>Past Calculations</h2>
+	<table id="pastCalculationsTable">
+		<thead>
+			<tr>
+				<th>Date</th>
+				<th>Mailing List Count</th>
+				<th>Unsubscribe List Count</th>
+				<th>Number Unsubscribed</th>
+				<th>Still Subscribed</th>
+			</tr>
+		</thead>
+		<tbody></tbody>
+	</table>
 
 	<script>
 		let mailingListFileRef = null;
 		let unsubscribesFileRef = null;
 
-		// Set up the "drop zones" for both mailing list and unsubscribes
-		setupDropZone("mailingListDropZone", "mailingListFile", file => {
-			mailingListFileRef = file;
-		});
-		setupDropZone("unsubscribesDropZone", "unsubscribesFile", file => {
-			unsubscribesFileRef = file;
+		// We'll store the most recent calculation results here
+		let lastCalculation = null;
+
+		window.addEventListener("DOMContentLoaded", () => {
+			// Set up drag-and-drop areas
+			setupDropZone("mailingListDropZone", "mailingListFile", file => {
+				mailingListFileRef = file;
+			});
+			setupDropZone("unsubscribesDropZone", "unsubscribesFile", file => {
+				unsubscribesFileRef = file;
+			});
+
+			// Hook up the buttons
+			document.getElementById("processButton").addEventListener("click", processFiles);
+			document.getElementById("saveButton").addEventListener("click", saveToLocalStorage);
+
+			// On load, display any past calculations from local storage
+			loadPastCalculations();
 		});
 
 		function setupDropZone(dropZoneId, fileInputId, onFilePicked) {
 			const dropZone = document.getElementById(dropZoneId);
 			const fileInput = document.getElementById(fileInputId);
 
-			// Clicking the drop zone triggers the file input
 			dropZone.addEventListener("click", () => fileInput.click());
 
-			// On file selection
 			fileInput.addEventListener("change", e => {
 				if (e.target.files && e.target.files.length > 0) {
 					onFilePicked(e.target.files[0]);
@@ -127,7 +173,6 @@
 				}
 			});
 
-			// Drag & drop
 			dropZone.addEventListener("dragover", e => {
 				e.preventDefault();
 				dropZone.classList.add("drag-over");
@@ -140,14 +185,12 @@
 				dropZone.classList.remove("drag-over");
 				if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
 					onFilePicked(e.dataTransfer.files[0]);
-					// Keep it in the file input so we can still reference it
 					fileInput.files = e.dataTransfer.files;
 					dropZone.textContent = e.dataTransfer.files[0].name;
 				}
 			});
 		}
 
-		// Clicking "Process" button
 		function processFiles() {
 			if (!mailingListFileRef || !unsubscribesFileRef) {
 				alert("Please choose both the mailing list and the unsubscribe CSV first.");
@@ -156,15 +199,17 @@
 
 			readCsvFile(mailingListFileRef, function (mailingListData) {
 				readCsvFile(unsubscribesFileRef, function (unsubscribesData) {
-					// Try to extract "EMAIL" from mailingList, "email" from unsubscribes
+					// Extract emails
 					const mailingListEmails = extractEmails(mailingListData, "EMAIL");
 					const unsubEmails = extractEmails(unsubscribesData, "email");
 
+					// Counts
 					const mailingListCount = mailingListEmails.length;
 					const unsubCount = unsubEmails.length;
 					const unsubscribedCount = mailingListEmails.filter(x => unsubEmails.includes(x)).length;
 					const stillSubscribed = mailingListCount - unsubscribedCount;
 
+					// Display the results
 					const outDiv = document.getElementById("output");
 					outDiv.innerHTML = `
             <p>Mailing list count: <strong>${mailingListCount}</strong></p>
@@ -172,11 +217,57 @@
             <p>Number unsubscribed: <strong>${unsubscribedCount}</strong></p>
             <p>Still subscribed: <strong>${stillSubscribed}</strong></p>
           `;
+
+					// Store them in a global object so we can save them
+					lastCalculation = {
+						date: new Date().toLocaleString(),
+						mailingListCount,
+						unsubCount,
+						unsubscribedCount,
+						stillSubscribed
+					};
 				});
 			});
 		}
 
-		// Reads a CSV file (with standard double quotes & commas) and returns a 2D array
+		function saveToLocalStorage() {
+			if (!lastCalculation) {
+				alert("No calculation results to save. Please run 'Process' first.");
+				return;
+			}
+
+			// Fetch existing data from local storage (or an empty array if none)
+			let allCalcs = JSON.parse(localStorage.getItem("pastCalculations")) || [];
+			// Add the newest one
+			allCalcs.push(lastCalculation);
+			// Save back
+			localStorage.setItem("pastCalculations", JSON.stringify(allCalcs));
+
+			// Also add this row to the table
+			addCalculationToTable(lastCalculation);
+		}
+
+		function loadPastCalculations() {
+			const allCalcs = JSON.parse(localStorage.getItem("pastCalculations")) || [];
+			allCalcs.forEach(calc => addCalculationToTable(calc));
+		}
+
+		function addCalculationToTable(calc) {
+			const tbody = document.querySelector("#pastCalculationsTable tbody");
+			const tr = document.createElement("tr");
+			tr.innerHTML = `
+        <td>${calc.date}</td>
+        <td>${calc.mailingListCount}</td>
+        <td>${calc.unsubCount}</td>
+        <td>${calc.unsubscribedCount}</td>
+        <td>${calc.stillSubscribed}</td>
+      `;
+			tbody.appendChild(tr);
+		}
+
+		// ========== CSV Reading & Parsing ==========
+
+		// Read the CSV file using FileReader, then parse
 		function readCsvFile(file, callback) {
 			const reader = new FileReader();
 			reader.onload = function (e) {
@@ -191,9 +282,7 @@
 		 * A simple CSV parser that handles:
 		 * - Commas as delimiters
 		 * - Double quotes around fields
-		 * - Escaped double quotes within fields ("")
-		 * 
-		 * Returns an array of rows, each row is an array of field strings.
+		 * - Escaped double quotes ("") within fields
 		 */
 		function parseCsv(str) {
 			const rows = [];
@@ -201,52 +290,47 @@
 			let col = "";
 			let inQuotes = false;
 
-			// We iterate through every character
 			for (let i = 0; i < str.length; i++) {
 				const c = str[i];
 				const nextC = str[i + 1];
 
 				if (c === '"') {
-					// If we see a quote, toggle inQuotes state
-					// BUT if the next char is also a quote, then it's an escaped quote
+					// If we see a quote, toggle inQuotes.
+					// If the next char is also a quote, then it's an escaped quote
 					if (inQuotes && nextC === '"') {
-						// It's an escaped quote, so we add just one quote to the column text
 						col += '"';
-						i++; // Skip the next quote
+						i++;
 					} else {
 						inQuotes = !inQuotes;
 					}
 				} else if (c === ',' && !inQuotes) {
-					// Comma (delimiter) outside quotes => end of this cell
 					row.push(col);
 					col = "";
 				} else if ((c === '\r' || c === '\n') && !inQuotes) {
-					// End of line (if not in quotes)
 					if (col || col === "") {
 						row.push(col);
 					}
-					col = "";
 					if (row.length > 0) {
 						rows.push(row);
 					}
 					row = [];
-					// If it's \r\n, skip the next char so we don't get empty line
+					col = "";
+					// If we have \r\n, skip the next char
 					if (c === '\r' && nextC === '\n') {
 						i++;
 					}
 				} else {
-					// Normal character
 					col += c;
 				}
 			}
-			// Push the last column & row if there's anything
+			// Push any trailing data
 			if (col || col === "") row.push(col);
 			if (row.length > 0) rows.push(row);
 
 			return rows;
 		}
 
-		// Extracts emails from a 2D array of CSV data using the given header name
+		// Extract emails from a 2D array of CSV data using the given header name
 		function extractEmails(csvData, headerName) {
 			if (csvData.length < 2) return [];
 			const headers = csvData[0].map(h => h.trim().toLowerCase());

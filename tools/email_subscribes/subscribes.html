@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<title>Mailing List vs. Unsubscribe Checker</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			margin: 40px;
+			background: #f5f5f5;
+		}
+
+		h1 {
+			margin-bottom: 10px;
+		}
+
+		.drop-zone {
+			width: 300px;
+			height: 120px;
+			border: 3px dashed #cccccc;
+			border-radius: 10px;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			font-size: 14px;
+			color: #666666;
+			background: #ffffff;
+			margin-bottom: 10px;
+			cursor: pointer;
+			transition: border-color 0.3s, background-color 0.3s;
+			text-align: center;
+			padding: 10px;
+		}
+
+		.drop-zone.drag-over {
+			border-color: #8888ff;
+			background-color: #fafaff;
+		}
+
+		.inputs-container {
+			display: flex;
+			gap: 40px;
+			margin-bottom: 20px;
+			flex-wrap: wrap;
+		}
+
+		.drop-zone-label {
+			margin-bottom: 5px;
+			font-weight: bold;
+		}
+
+		#output p {
+			background: #fff;
+			padding: 6px 10px;
+			margin: 5px 0;
+			border-radius: 4px;
+		}
+
+		button {
+			padding: 10px 15px;
+			background: #4CAF50;
+			color: #fff;
+			border: none;
+			border-radius: 5px;
+			cursor: pointer;
+			font-size: 14px;
+		}
+
+		button:hover {
+			background: #45a049;
+		}
+	</style>
+</head>
+
+<body>
+	<h1>Mailing List vs. Unsubscribe Checker</h1>
+
+	<!-- File selection areas -->
+	<div class="inputs-container">
+		<!-- Mailing List -->
+		<div>
+			<div class="drop-zone-label">Mailing list CSV</div>
+			<div class="drop-zone" id="mailingListDropZone">
+				Drop file here or click to select
+			</div>
+			<input type="file" id="mailingListFile" accept=".csv" style="display:none" />
+		</div>
+
+		<!-- Unsubscribes -->
+		<div>
+			<div class="drop-zone-label">Unsubscribe CSV</div>
+			<div class="drop-zone" id="unsubscribesDropZone">
+				Drop file here or click to select
+			</div>
+			<input type="file" id="unsubscribesFile" accept=".csv" style="display:none" />
+		</div>
+	</div>
+
+	<button onclick="processFiles()">Process</button>
+	<div id="output" style="margin-top:20px;"></div>
+
+	<script>
+		let mailingListFileRef = null;
+		let unsubscribesFileRef = null;
+
+		// Set up the "drop zones" for both mailing list and unsubscribes
+		setupDropZone("mailingListDropZone", "mailingListFile", file => {
+			mailingListFileRef = file;
+		});
+		setupDropZone("unsubscribesDropZone", "unsubscribesFile", file => {
+			unsubscribesFileRef = file;
+		});
+
+		function setupDropZone(dropZoneId, fileInputId, onFilePicked) {
+			const dropZone = document.getElementById(dropZoneId);
+			const fileInput = document.getElementById(fileInputId);
+
+			// Clicking the drop zone triggers the file input
+			dropZone.addEventListener("click", () => fileInput.click());
+
+			// On file selection
+			fileInput.addEventListener("change", e => {
+				if (e.target.files && e.target.files.length > 0) {
+					onFilePicked(e.target.files[0]);
+					dropZone.textContent = e.target.files[0].name;
+				}
+			});
+
+			// Drag & drop
+			dropZone.addEventListener("dragover", e => {
+				e.preventDefault();
+				dropZone.classList.add("drag-over");
+			});
+			dropZone.addEventListener("dragleave", () => {
+				dropZone.classList.remove("drag-over");
+			});
+			dropZone.addEventListener("drop", e => {
+				e.preventDefault();
+				dropZone.classList.remove("drag-over");
+				if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+					onFilePicked(e.dataTransfer.files[0]);
+					// Keep it in the file input so we can still reference it
+					fileInput.files = e.dataTransfer.files;
+					dropZone.textContent = e.dataTransfer.files[0].name;
+				}
+			});
+		}
+
+		// Clicking "Process" button
+		function processFiles() {
+			if (!mailingListFileRef || !unsubscribesFileRef) {
+				alert("Please choose both the mailing list and the unsubscribe CSV first.");
+				return;
+			}
+
+			readCsvFile(mailingListFileRef, function (mailingListData) {
+				readCsvFile(unsubscribesFileRef, function (unsubscribesData) {
+					// Try to extract "EMAIL" from mailingList, "email" from unsubscribes
+					const mailingListEmails = extractEmails(mailingListData, "EMAIL");
+					const unsubEmails = extractEmails(unsubscribesData, "email");
+
+					const mailingListCount = mailingListEmails.length;
+					const unsubCount = unsubEmails.length;
+					const unsubscribedCount = mailingListEmails.filter(x => unsubEmails.includes(x)).length;
+					const stillSubscribed = mailingListCount - unsubscribedCount;
+
+					const outDiv = document.getElementById("output");
+					outDiv.innerHTML = `
+            <p>Mailing list count: <strong>${mailingListCount}</strong></p>
+            <p>Unsubscribe list count: <strong>${unsubCount}</strong></p>
+            <p>Number unsubscribed: <strong>${unsubscribedCount}</strong></p>
+            <p>Still subscribed: <strong>${stillSubscribed}</strong></p>
+          `;
+				});
+			});
+		}
+
+		// Reads a CSV file (with standard double quotes & commas) and returns a 2D array
+		function readCsvFile(file, callback) {
+			const reader = new FileReader();
+			reader.onload = function (e) {
+				const text = e.target.result;
+				const data = parseCsv(text);
+				callback(data);
+			};
+			reader.readAsText(file);
+		}
+
+		/**
+		 * A simple CSV parser that handles:
+		 * - Commas as delimiters
+		 * - Double quotes around fields
+		 * - Escaped double quotes within fields ("")
+		 * 
+		 * Returns an array of rows, each row is an array of field strings.
+		 */
+		function parseCsv(str) {
+			const rows = [];
+			let row = [];
+			let col = "";
+			let inQuotes = false;
+
+			// We iterate through every character
+			for (let i = 0; i < str.length; i++) {
+				const c = str[i];
+				const nextC = str[i + 1];
+
+				if (c === '"') {
+					// If we see a quote, toggle inQuotes state
+					// BUT if the next char is also a quote, then it's an escaped quote
+					if (inQuotes && nextC === '"') {
+						// It's an escaped quote, so we add just one quote to the column text
+						col += '"';
+						i++; // Skip the next quote
+					} else {
+						inQuotes = !inQuotes;
+					}
+				} else if (c === ',' && !inQuotes) {
+					// Comma (delimiter) outside quotes => end of this cell
+					row.push(col);
+					col = "";
+				} else if ((c === '\r' || c === '\n') && !inQuotes) {
+					// End of line (if not in quotes)
+					if (col || col === "") {
+						row.push(col);
+					}
+					col = "";
+					if (row.length > 0) {
+						rows.push(row);
+					}
+					row = [];
+					// If it's \r\n, skip the next char so we don't get empty line
+					if (c === '\r' && nextC === '\n') {
+						i++;
+					}
+				} else {
+					// Normal character
+					col += c;
+				}
+			}
+			// Push the last column & row if there's anything
+			if (col || col === "") row.push(col);
+			if (row.length > 0) rows.push(row);
+
+			return rows;
+		}
+
+		// Extracts emails from a 2D array of CSV data using the given header name
+		function extractEmails(csvData, headerName) {
+			if (csvData.length < 2) return [];
+			const headers = csvData[0].map(h => h.trim().toLowerCase());
+			const idx = headers.indexOf(headerName.toLowerCase());
+			if (idx === -1) return [];
+
+			const emails = new Set();
+			for (let i = 1; i < csvData.length; i++) {
+				const row = csvData[i];
+				if (row[idx]) {
+					emails.add(row[idx].trim().toLowerCase());
+				}
+			}
+			return Array.from(emails);
+		}
+	</script>
+</body>
+
+</html>

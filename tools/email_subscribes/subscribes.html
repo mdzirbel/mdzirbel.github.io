@@ -1,366 +1,424 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-	<meta charset="utf-8">
-	<title>Mailing List vs. Unsubscribe Checker</title>
-	<style>
-		body {
-			font-family: Arial, sans-serif;
-			margin: 40px;
-			background: #f5f5f5;
-		}
-
-		h1 {
-			margin-bottom: 10px;
-		}
-
-		.drop-zone {
-			width: 300px;
-			height: 120px;
-			border: 3px dashed #cccccc;
-			border-radius: 10px;
-			display: flex;
-			justify-content: center;
-			align-items: center;
-			font-size: 14px;
-			color: #666666;
-			background: #ffffff;
-			margin-bottom: 10px;
-			cursor: pointer;
-			transition: border-color 0.3s, background-color 0.3s;
-			text-align: center;
-			padding: 10px;
-		}
-
-		.drop-zone.drag-over {
-			border-color: #8888ff;
-			background-color: #fafaff;
-		}
-
-		.inputs-container {
-			display: flex;
-			gap: 40px;
-			margin-bottom: 20px;
-			flex-wrap: wrap;
-		}
-
-		.drop-zone-label {
-			margin-bottom: 5px;
-			font-weight: bold;
-			display: flex;
-			align-items: center;
-			gap: 8px;
-		}
-
-		#output p {
-			background: #fff;
-			padding: 6px 10px;
-			margin: 5px 0;
-			border-radius: 4px;
-		}
-
-		button {
-			padding: 10px 15px;
-			background: #4CAF50;
-			color: #fff;
-			border: none;
-			border-radius: 5px;
-			cursor: pointer;
-			font-size: 14px;
-			margin-right: 10px;
-		}
-
-		button:hover {
-			background: #45a049;
-		}
-
-		#pastCalculationsTable {
-			border-collapse: collapse;
-			margin-top: 20px;
-			background: #fff;
-		}
-
-		#pastCalculationsTable th,
-		#pastCalculationsTable td {
-			border: 1px solid #ccc;
-			padding: 5px 10px;
-		}
-
-		#pastCalculationsTable th {
-			background: #eaeaea;
-		}
-	</style>
+  <meta charset="utf-8">
+  <title>Mailing List vs. Unsubscribe Checker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background: #f5f5f5;
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    .drop-zone {
+      width: 300px;
+      height: 120px;
+      border: 3px dashed #cccccc;
+      border-radius: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 14px;
+      color: #666666;
+      background: #ffffff;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: border-color 0.3s, background-color 0.3s;
+      text-align: center;
+      padding: 10px;
+    }
+    .drop-zone.drag-over {
+      border-color: #8888ff;
+      background-color: #fafaff;
+    }
+    .inputs-container {
+      display: flex;
+      gap: 40px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .drop-zone-label {
+      margin-bottom: 5px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    #output p {
+      background: #fff;
+      padding: 6px 10px;
+      margin: 5px 0;
+      border-radius: 4px;
+    }
+    button {
+      padding: 10px 15px;
+      background: #4CAF50;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-right: 10px;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    #pastCalculationsTable {
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: #fff;
+      width: 100%;
+    }
+    #pastCalculationsTable th, #pastCalculationsTable td {
+      border: 1px solid #ccc;
+      padding: 5px 10px;
+    }
+    #pastCalculationsTable th {
+      background: #eaeaea;
+    }
+  </style>
 </head>
-
 <body>
-	<h1>Mailing List vs. Unsubscribe Checker</h1>
+  <h1>Mailing List vs. Unsubscribe Checker</h1>
 
-	<!-- File selection areas -->
-	<div class="inputs-container">
-		<!-- Mailing List -->
-		<div>
-			<div class="drop-zone-label">
-				Mailing list CSV
-				<a href="https://mc.sendgrid.com/contacts/segments/b1c690c4-1e9d-4edc-9cc1-c5a26bc473bc"
-					target="_blank">
-					(Link to download page)
-				</a>
-			</div>
-			<div class="drop-zone" id="mailingListDropZone">
-				Drop file here or click to select
-			</div>
-			<input type="file" id="mailingListFile" accept=".csv" style="display:none" />
-		</div>
+  <!-- File selection areas -->
+  <div class="inputs-container">
+    <!-- Mailing List -->
+    <div>
+      <div class="drop-zone-label">
+        Mailing list CSV
+        <a href="https://mc.sendgrid.com/contacts/segments/b1c690c4-1e9d-4edc-9cc1-c5a26bc473bc" target="_blank">
+          (Link to download page)
+        </a>
+      </div>
+      <div class="drop-zone" id="mailingListDropZone">
+        Drop file here or click to select
+      </div>
+      <input type="file" id="mailingListFile" accept=".csv" style="display:none" />
+    </div>
 
-		<!-- Unsubscribes -->
-		<div>
-			<div class="drop-zone-label">
-				Unsubscribe CSV
-				<a href="https://app.sendgrid.com/suppressions/global_unsubscribes" target="_blank">
-					(Link to download page)
-				</a>
-			</div>
-			<div class="drop-zone" id="unsubscribesDropZone">
-				Drop file here or click to select
-			</div>
-			<input type="file" id="unsubscribesFile" accept=".csv" style="display:none" />
-		</div>
-	</div>
+    <!-- Global Unsubscribes -->
+    <div>
+      <div class="drop-zone-label">
+        Global Unsubscribes CSV
+        <a href="https://app.sendgrid.com/suppressions/global_unsubscribes" target="_blank">
+          (Link to download page)
+        </a>
+      </div>
+      <div class="drop-zone" id="globalUnsubDropZone">
+        Drop file here or click to select
+      </div>
+      <input type="file" id="globalUnsubFile" accept=".csv" style="display:none" />
+    </div>
 
-	<!-- Action buttons -->
-	<button id="processButton">Process</button>
-	<button id="saveButton">Save to Local Storage</button>
+    <!-- Unsubscribe Group (No Headers) -->
+    <div>
+      <div class="drop-zone-label">
+        Unsubscribe Group CSV
+        <a href="https://app.sendgrid.com/suppressions/advanced_suppression_manager" target="_blank">
+          (Link to download page)
+        </a>
+      </div>
+      <div class="drop-zone" id="unsubGroupDropZone">
+        Drop file here or click to select
+      </div>
+      <input type="file" id="unsubGroupFile" accept=".csv" style="display:none" />
+    </div>
+  </div>
 
-	<!-- Calculation output -->
-	<div id="output" style="margin-top:20px;"></div>
+  <!-- Action buttons -->
+  <button id="processButton">Process</button>
+  <button id="saveButton">Save to Local Storage</button>
 
-	<!-- Past calculations table -->
-	<h2>Past Calculations</h2>
-	<table id="pastCalculationsTable">
-		<thead>
-			<tr>
-				<th>Date</th>
-				<th>Mailing List Count</th>
-				<th>Unsubscribe List Count</th>
-				<th>Number Unsubscribed</th>
-				<th>Still Subscribed</th>
-			</tr>
-		</thead>
-		<tbody></tbody>
-	</table>
+  <!-- Calculation output -->
+  <div id="output" style="margin-top:20px;"></div>
 
-	<script>
-		let mailingListFileRef = null;
-		let unsubscribesFileRef = null;
+  <!-- Past calculations table -->
+  <h2>Past Calculations</h2>
+  <table id="pastCalculationsTable">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Mailing List Count</th>
+        <th>Global Unsub Count</th>
+        <th>Group Unsub Count</th>
+        <th>Mailing List on Global Unsub</th>
+        <th>Mailing List on Group Unsub</th>
+        <th>Total Unsubscribed</th>
+        <th>Still Subscribed</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
-		// We'll store the most recent calculation results here
-		let lastCalculation = null;
+  <script>
+    let mailingListFileRef = null;
+    let globalUnsubFileRef = null;
+    let unsubGroupFileRef = null;
 
-		window.addEventListener("DOMContentLoaded", () => {
-			// Set up drag-and-drop areas
-			setupDropZone("mailingListDropZone", "mailingListFile", file => {
-				mailingListFileRef = file;
-			});
-			setupDropZone("unsubscribesDropZone", "unsubscribesFile", file => {
-				unsubscribesFileRef = file;
-			});
+    // We'll store the most recent calculation results here
+    let lastCalculation = null;
 
-			// Hook up the buttons
-			document.getElementById("processButton").addEventListener("click", processFiles);
-			document.getElementById("saveButton").addEventListener("click", saveToLocalStorage);
+    window.addEventListener("DOMContentLoaded", () => {
+      // Set up drag-and-drop areas
+      setupDropZone("mailingListDropZone", "mailingListFile", file => {
+        mailingListFileRef = file;
+      });
+      setupDropZone("globalUnsubDropZone", "globalUnsubFile", file => {
+        globalUnsubFileRef = file;
+      });
+      setupDropZone("unsubGroupDropZone", "unsubGroupFile", file => {
+        unsubGroupFileRef = file;
+      });
 
-			// On load, display any past calculations from local storage
-			loadPastCalculations();
-		});
+      // Hook up the buttons
+      document.getElementById("processButton").addEventListener("click", processFiles);
+      document.getElementById("saveButton").addEventListener("click", saveToLocalStorage);
 
-		function setupDropZone(dropZoneId, fileInputId, onFilePicked) {
-			const dropZone = document.getElementById(dropZoneId);
-			const fileInput = document.getElementById(fileInputId);
+      // On load, display any past calculations from local storage
+      loadPastCalculations();
+    });
 
-			dropZone.addEventListener("click", () => fileInput.click());
+    function setupDropZone(dropZoneId, fileInputId, onFilePicked) {
+      const dropZone = document.getElementById(dropZoneId);
+      const fileInput = document.getElementById(fileInputId);
 
-			fileInput.addEventListener("change", e => {
-				if (e.target.files && e.target.files.length > 0) {
-					onFilePicked(e.target.files[0]);
-					dropZone.textContent = e.target.files[0].name;
-				}
-			});
+      dropZone.addEventListener("click", () => fileInput.click());
 
-			dropZone.addEventListener("dragover", e => {
-				e.preventDefault();
-				dropZone.classList.add("drag-over");
-			});
-			dropZone.addEventListener("dragleave", () => {
-				dropZone.classList.remove("drag-over");
-			});
-			dropZone.addEventListener("drop", e => {
-				e.preventDefault();
-				dropZone.classList.remove("drag-over");
-				if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-					onFilePicked(e.dataTransfer.files[0]);
-					fileInput.files = e.dataTransfer.files;
-					dropZone.textContent = e.dataTransfer.files[0].name;
-				}
-			});
-		}
+      fileInput.addEventListener("change", e => {
+        if (e.target.files && e.target.files.length > 0) {
+          onFilePicked(e.target.files[0]);
+          dropZone.textContent = e.target.files[0].name;
+        }
+      });
 
-		function processFiles() {
-			if (!mailingListFileRef || !unsubscribesFileRef) {
-				alert("Please choose both the mailing list and the unsubscribe CSV first.");
-				return;
-			}
+      dropZone.addEventListener("dragover", e => {
+        e.preventDefault();
+        dropZone.classList.add("drag-over");
+      });
+      dropZone.addEventListener("dragleave", () => {
+        dropZone.classList.remove("drag-over");
+      });
+      dropZone.addEventListener("drop", e => {
+        e.preventDefault();
+        dropZone.classList.remove("drag-over");
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          onFilePicked(e.dataTransfer.files[0]);
+          fileInput.files = e.dataTransfer.files;
+          dropZone.textContent = e.dataTransfer.files[0].name;
+        }
+      });
+    }
 
-			readCsvFile(mailingListFileRef, function (mailingListData) {
-				readCsvFile(unsubscribesFileRef, function (unsubscribesData) {
-					// Extract emails
-					const mailingListEmails = extractEmails(mailingListData, "EMAIL");
-					const unsubEmails = extractEmails(unsubscribesData, "email");
+    function processFiles() {
+      if (!mailingListFileRef || !globalUnsubFileRef || !unsubGroupFileRef) {
+        alert("Please choose all three CSV files first (Mailing list, Global unsubscribes, and Unsubscribe Group).");
+        return;
+      }
 
-					// Counts
-					const mailingListCount = mailingListEmails.length;
-					const unsubCount = unsubEmails.length;
-					const unsubscribedCount = mailingListEmails.filter(x => unsubEmails.includes(x)).length;
-					const stillSubscribed = mailingListCount - unsubscribedCount;
+      // Read them in sequence
+      readCsvFile(mailingListFileRef, mailingListData => {
+        readCsvFile(globalUnsubFileRef, globalUnsubData => {
+          readCsvFile(unsubGroupFileRef, unsubGroupData => {
+            // Extract emails
+            // 1) The mailing list is expected to have "EMAIL" as a header
+            const mailingListEmails = extractEmails(mailingListData, "EMAIL");
 
-					// Display the results
-					const outDiv = document.getElementById("output");
-					outDiv.innerHTML = `
-            <p>Mailing list count: <strong>${mailingListCount}</strong></p>
-            <p>Unsubscribe list count: <strong>${unsubCount}</strong></p>
-            <p>Number unsubscribed: <strong>${unsubscribedCount}</strong></p>
-            <p>Still subscribed: <strong>${stillSubscribed}</strong></p>
-          `;
+            // 2) The global unsubscribes is expected to have "email" as a header
+            const globalUnsubEmails = extractEmails(globalUnsubData, "email");
 
-					// Store them in a global object so we can save them
-					lastCalculation = {
-						date: new Date().toLocaleString(),
-						mailingListCount,
-						unsubCount,
-						unsubscribedCount,
-						stillSubscribed
-					};
-				});
-			});
-		}
+            // 3) The unsub group might not have a header at all. We try the normal approach first,
+            //    and if no header is found, we treat every row[0] as an email (no header).
+            let unsubGroupEmails = extractEmails(unsubGroupData, "email");
+            if (unsubGroupEmails.length === 0) {
+              unsubGroupEmails = extractEmailsNoHeader(unsubGroupData);
+            }
 
-		function saveToLocalStorage() {
-			if (!lastCalculation) {
-				alert("No calculation results to save. Please run 'Process' first.");
-				return;
-			}
+            // Counts
+            const mailingListCount = mailingListEmails.length;
+            const globalUnsubCount = globalUnsubEmails.length;
+            const unsubGroupCount = unsubGroupEmails.length;
 
-			// Fetch existing data from local storage (or an empty array if none)
-			let allCalcs = JSON.parse(localStorage.getItem("pastCalculations")) || [];
-			// Add the newest one
-			allCalcs.push(lastCalculation);
-			// Save back
-			localStorage.setItem("pastCalculations", JSON.stringify(allCalcs));
+            // On mailing list AND global unsub
+            const unsubFromGlobal = mailingListEmails.filter(e => globalUnsubEmails.includes(e)).length;
+            // On mailing list AND unsub group
+            const unsubFromGroup = mailingListEmails.filter(e => unsubGroupEmails.includes(e)).length;
 
-			// Also add this row to the table
-			addCalculationToTable(lastCalculation);
-		}
+            // The union of both unsub sets => total unsubscribed from the mailing list
+            const unsubUnion = new Set([...globalUnsubEmails, ...unsubGroupEmails]);
+            const totalUnsubscribed = mailingListEmails.filter(e => unsubUnion.has(e)).length;
 
-		function loadPastCalculations() {
-			const allCalcs = JSON.parse(localStorage.getItem("pastCalculations")) || [];
-			allCalcs.forEach(calc => addCalculationToTable(calc));
-		}
+            // The total still subscribed
+            const stillSubscribed = mailingListCount - totalUnsubscribed;
 
-		function addCalculationToTable(calc) {
-			const tbody = document.querySelector("#pastCalculationsTable tbody");
-			const tr = document.createElement("tr");
-			tr.innerHTML = `
+            // Display the results
+            const outDiv = document.getElementById("output");
+            outDiv.innerHTML = `
+              <p>Mailing list count: <strong>${mailingListCount}</strong></p>
+              <p>Global unsubscribes count: <strong>${globalUnsubCount}</strong></p>
+              <p>Unsubscribe group count: <strong>${unsubGroupCount}</strong></p>
+              <p>Mailing list who are in global unsubscribes: <strong>${unsubFromGlobal}</strong></p>
+              <p>Mailing list who are in unsubscribe group: <strong>${unsubFromGroup}</strong></p>
+              <p>Total unsubscribed (union of both lists): <strong>${totalUnsubscribed}</strong></p>
+              <p>Still subscribed: <strong>${stillSubscribed}</strong></p>
+            `;
+
+            // Store them in a global object so we can save them
+            lastCalculation = {
+              date: new Date().toLocaleString(),
+              mailingListCount,
+              globalUnsubCount,
+              unsubGroupCount,
+              unsubFromGlobal,
+              unsubFromGroup,
+              totalUnsubscribed,
+              stillSubscribed
+            };
+          });
+        });
+      });
+    }
+
+    function saveToLocalStorage() {
+      if (!lastCalculation) {
+        alert("No calculation results to save. Please run 'Process' first.");
+        return;
+      }
+
+      // Fetch existing data from local storage (or an empty array if none)
+      let allCalcs = JSON.parse(localStorage.getItem("pastCalculations")) || [];
+      // Add the newest one
+      allCalcs.push(lastCalculation);
+      // Save back
+      localStorage.setItem("pastCalculations", JSON.stringify(allCalcs));
+
+      // Also add this row to the table
+      addCalculationToTable(lastCalculation);
+    }
+
+    function loadPastCalculations() {
+      const allCalcs = JSON.parse(localStorage.getItem("pastCalculations")) || [];
+      allCalcs.forEach(calc => addCalculationToTable(calc));
+    }
+
+    function addCalculationToTable(calc) {
+      const tbody = document.querySelector("#pastCalculationsTable tbody");
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
         <td>${calc.date}</td>
         <td>${calc.mailingListCount}</td>
-        <td>${calc.unsubCount}</td>
-        <td>${calc.unsubscribedCount}</td>
+        <td>${calc.globalUnsubCount}</td>
+        <td>${calc.unsubGroupCount}</td>
+        <td>${calc.unsubFromGlobal}</td>
+        <td>${calc.unsubFromGroup}</td>
+        <td>${calc.totalUnsubscribed}</td>
         <td>${calc.stillSubscribed}</td>
       `;
-			tbody.appendChild(tr);
-		}
+      tbody.appendChild(tr);
+    }
 
-		// ========== CSV Reading & Parsing ==========
+    // ========== CSV Reading & Parsing ==========
 
-		// Read the CSV file using FileReader, then parse
-		function readCsvFile(file, callback) {
-			const reader = new FileReader();
-			reader.onload = function (e) {
-				const text = e.target.result;
-				const data = parseCsv(text);
-				callback(data);
-			};
-			reader.readAsText(file);
-		}
+    // Read the CSV file using FileReader, then parse
+    function readCsvFile(file, callback) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const text = e.target.result;
+        const data = parseCsv(text);
+        callback(data);
+      };
+      reader.readAsText(file);
+    }
 
-		/**
-		 * A simple CSV parser that handles:
-		 * - Commas as delimiters
-		 * - Double quotes around fields
-		 * - Escaped double quotes ("") within fields
-		 */
-		function parseCsv(str) {
-			const rows = [];
-			let row = [];
-			let col = "";
-			let inQuotes = false;
+    /**
+     * A simple CSV parser that handles:
+     * - Commas as delimiters
+     * - Double quotes around fields
+     * - Escaped double quotes ("") within fields
+     */
+    function parseCsv(str) {
+      const rows = [];
+      let row = [];
+      let col = "";
+      let inQuotes = false;
 
-			for (let i = 0; i < str.length; i++) {
-				const c = str[i];
-				const nextC = str[i + 1];
+      for (let i = 0; i < str.length; i++) {
+        const c = str[i];
+        const nextC = str[i + 1];
 
-				if (c === '"') {
-					// If we see a quote, toggle inQuotes.
-					// If the next char is also a quote, then it's an escaped quote
-					if (inQuotes && nextC === '"') {
-						col += '"';
-						i++;
-					} else {
-						inQuotes = !inQuotes;
-					}
-				} else if (c === ',' && !inQuotes) {
-					row.push(col);
-					col = "";
-				} else if ((c === '\r' || c === '\n') && !inQuotes) {
-					if (col || col === "") {
-						row.push(col);
-					}
-					if (row.length > 0) {
-						rows.push(row);
-					}
-					row = [];
-					col = "";
-					// If we have \r\n, skip the next char
-					if (c === '\r' && nextC === '\n') {
-						i++;
-					}
-				} else {
-					col += c;
-				}
-			}
-			// Push any trailing data
-			if (col || col === "") row.push(col);
-			if (row.length > 0) rows.push(row);
+        if (c === '"') {
+          // If we see a quote, toggle inQuotes
+          // If the next char is also a quote => escaped quote
+          if (inQuotes && nextC === '"') {
+            col += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (c === ',' && !inQuotes) {
+          row.push(col);
+          col = "";
+        } else if ((c === '\r' || c === '\n') && !inQuotes) {
+          if (col || col === "") {
+            row.push(col);
+          }
+          if (row.length > 0) {
+            rows.push(row);
+          }
+          row = [];
+          col = "";
+          // If we have \r\n, skip the next char
+          if (c === '\r' && nextC === '\n') {
+            i++;
+          }
+        } else {
+          col += c;
+        }
+      }
+      // Push any trailing data
+      if (col || col === "") row.push(col);
+      if (row.length > 0) rows.push(row);
 
-			return rows;
-		}
+      return rows;
+    }
 
-		// Extract emails from a 2D array of CSV data using the given header name
-		function extractEmails(csvData, headerName) {
-			if (csvData.length < 2) return [];
-			const headers = csvData[0].map(h => h.trim().toLowerCase());
-			const idx = headers.indexOf(headerName.toLowerCase());
-			if (idx === -1) return [];
+    // Extract emails from the CSV 2D array, looking for a specific header
+    // Returns an array of emails (lowercased, trimmed)
+    function extractEmails(csvData, headerName) {
+      if (csvData.length < 1) return [];
+      // Attempt to find the header row
+      const headers = csvData[0].map(h => h.trim().toLowerCase());
+      const idx = headers.indexOf(headerName.toLowerCase());
+      if (idx === -1) {
+        // Not found => return empty (maybe we'll fallback later)
+        return [];
+      }
 
-			const emails = new Set();
-			for (let i = 1; i < csvData.length; i++) {
-				const row = csvData[i];
-				if (row[idx]) {
-					emails.add(row[idx].trim().toLowerCase());
-				}
-			}
-			return Array.from(emails);
-		}
-	</script>
+      const emails = new Set();
+      // Start at row 1 because row 0 is the header
+      for (let i = 1; i < csvData.length; i++) {
+        const row = csvData[i];
+        if (row[idx]) {
+          emails.add(row[idx].trim().toLowerCase());
+        }
+      }
+      return Array.from(emails);
+    }
+
+    // For files with no headers at all, we treat each line as one column:
+    // row[i][0] is the email. We gather them from row 0 to the end.
+    function extractEmailsNoHeader(csvData) {
+      const emails = new Set();
+      for (let i = 0; i < csvData.length; i++) {
+        const row = csvData[i];
+        if (row.length > 0 && row[0].trim() !== "") {
+          emails.add(row[0].trim().toLowerCase());
+        }
+      }
+      return Array.from(emails);
+    }
+  </script>
 </body>
-
 </html>

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>990 XML Multi-Year Parser with Local Storage</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    textarea { width: 100%; height: 300px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: right; }
+    th { background-color: #f9f9f9; }
+    td:first-child, th:first-child { text-align: left; }
+    button { margin-right: 10px; }
+  </style>
+</head>
+<body>
+  <h1>990 XML Multi-Year Parser with Local Storage</h1>
+  <p>
+    Paste a 990 XML file below and click "Parse XML" to add its data as a new row.
+    The XML file is saved to local storage and will be reloaded automatically on subsequent visits.
+  </p>
+  <textarea id="xmlInput" placeholder="Paste your 990 XML here"></textarea>
+  <br>
+  <button onclick="handleParse()">Parse XML</button>
+  <button onclick="clearStorage()">Clear Storage</button>
+  <div id="output"></div>
+
+  <script>
+    // Global arrays to hold the raw XML files and parsed results.
+    let xmlFiles = [];
+    let parsedResults = [];
+
+    // Helper function to get a value using the IRS namespace.
+    function getValue(xmlDoc, tagName) {
+      const ns = "http://www.irs.gov/efile";
+      const elems = xmlDoc.getElementsByTagNameNS(ns, tagName);
+      return elems.length > 0 ? elems[0].textContent.trim() : "0";
+    }
+
+    // Helper to format numbers with commas.
+    function formatNum(numStr) {
+      const num = parseFloat(numStr);
+      if (isNaN(num)) return numStr;
+      return num.toLocaleString();
+    }
+
+    // Function to extract and sort grant recipient details.
+    function getGrantRecipients(xmlDoc) {
+      const ns = "http://www.irs.gov/efile";
+      const grantNodes = xmlDoc.getElementsByTagNameNS(ns, "GrantOrContributionPdDurYrGrp");
+      let grants = [];
+      for (let i = 0; i < grantNodes.length; i++) {
+        const recipientNodes = grantNodes[i].getElementsByTagNameNS(ns, "RecipientBusinessName");
+        let name = "";
+        if (recipientNodes.length > 0) {
+          const nameNode = recipientNodes[0].getElementsByTagNameNS(ns, "BusinessNameLine1Txt");
+          if (nameNode.length > 0) {
+            name = nameNode[0].textContent.trim();
+          }
+        }
+        const amtNodes = grantNodes[i].getElementsByTagNameNS(ns, "Amt");
+        let amt = "0";
+        if (amtNodes.length > 0) {
+          amt = amtNodes[0].textContent.trim();
+        }
+        if (name) {
+          grants.push({ name: name, amount: parseFloat(amt) || 0 });
+        }
+      }
+      // Sort descending by amount.
+      grants.sort((a, b) => b.amount - a.amount);
+      const names = grants.map(g => g.name).join("; ");
+      const amounts = grants.map(g => formatNum(g.amount.toString())).join("; ");
+      return { names, amounts };
+    }
+
+    // Function to extract and sort donor (contributor) details.
+    // This function looks for "ContributorInformationGrp" nodes (typically in IRS990ScheduleB)
+    // and extracts donor names from ContributorBusinessName/BusinessNameLine1Txt and amounts from TotalContributionsAmt.
+    function getDonationSources(xmlDoc) {
+      const ns = "http://www.irs.gov/efile";
+      const donationNodes = xmlDoc.getElementsByTagNameNS(ns, "ContributorInformationGrp");
+      let donations = [];
+      for (let i = 0; i < donationNodes.length; i++) {
+        let donorName = "";
+        const donorNodes = donationNodes[i].getElementsByTagNameNS(ns, "ContributorBusinessName");
+        if (donorNodes.length > 0) {
+          const nameNode = donorNodes[0].getElementsByTagNameNS(ns, "BusinessNameLine1Txt");
+          if (nameNode.length > 0) {
+            donorName = nameNode[0].textContent.trim();
+          }
+        }
+        let donationAmt = "0";
+        const amtNodes = donationNodes[i].getElementsByTagNameNS(ns, "TotalContributionsAmt");
+        if (amtNodes.length > 0) {
+          donationAmt = amtNodes[0].textContent.trim();
+        }
+        if (donorName) {
+          donations.push({ name: donorName, amount: parseFloat(donationAmt) || 0 });
+        }
+      }
+      // Sort donations in descending order.
+      donations.sort((a, b) => b.amount - a.amount);
+      const names = donations.map(d => d.name).join("; ");
+      const amounts = donations.map(d => formatNum(d.amount.toString())).join("; ");
+      return { names, amounts };
+    }
+
+    // Function that parses an XML text and returns a result object.
+    function parseXMLText(xmlText) {
+      const parser = new DOMParser();
+      let xmlDoc;
+      try {
+        xmlDoc = parser.parseFromString(xmlText, "text/xml");
+        if (xmlDoc.getElementsByTagName("parsererror").length > 0) {
+          alert("Error parsing XML. Please check your input.");
+          return null;
+        }
+      } catch (e) {
+        alert("Error parsing XML: " + e);
+        return null;
+      }
+
+      // Extract key values.
+      const year = getValue(xmlDoc, "TaxYr") || "N/A";
+      const comp = getValue(xmlDoc, "CompOfcrDirTrstRevAndExpnssAmt");
+      const profFees = getValue(xmlDoc, "OtherProfFeesRevAndExpnssAmt");
+      const interest = getValue(xmlDoc, "InterestRevAndExpnssAmt");
+      const taxes = getValue(xmlDoc, "TaxesRevAndExpnssAmt");
+      const otherExp = getValue(xmlDoc, "OtherExpensesRevAndExpnssAmt");
+      const operExpenses = getValue(xmlDoc, "TotOprExpensesRevAndExpnssAmt");
+
+      // Qualifying Distribution may be nested inside PFQualifyingDistributionsGrp.
+      const ns = "http://www.irs.gov/efile";
+      let qualDist = "0";
+      const pfGroup = xmlDoc.getElementsByTagNameNS(ns, "PFQualifyingDistributionsGrp")[0];
+      if (pfGroup) {
+        const qElem = pfGroup.getElementsByTagNameNS(ns, "QualifyingDistributionsAmt")[0];
+        qualDist = qElem ? qElem.textContent.trim() : "0";
+      }
+
+      const totalOutflows = getValue(xmlDoc, "TotalExpensesRevAndExpnssAmt");
+      const totalInflows = getValue(xmlDoc, "TotalRevAndExpnssAmt");
+      const currentCash = getValue(xmlDoc, "CashEOYAmt");
+
+      // Extract individual income sources.
+      const interestOnSavings = getValue(xmlDoc, "InterestOnSavRevAndExpnssAmt");
+      const dividends = getValue(xmlDoc, "DividendsRevAndExpnssAmt");
+      const netRental = getValue(xmlDoc, "NetRentalIncomeOrLossAmt");
+      const netGainSale = getValue(xmlDoc, "NetGainSaleAstRevAndExpnssAmt");
+      const otherIncome = getValue(xmlDoc, "OtherIncomeRevAndExpnssAmt");
+
+      // Extract grant recipients and their amounts (sorted from most to least).
+      const grantData = getGrantRecipients(xmlDoc);
+
+      // Extract donor (contributor) details using the new function.
+      const donationData = getDonationSources(xmlDoc);
+
+      return {
+        year,
+        comp,
+        profFees,
+        interest,
+        taxes,
+        otherExp,
+        operExpenses,
+        qualDist,
+        totalOutflows,
+        totalInflows,
+        currentCash,
+        interestOnSavings,
+        dividends,
+        netRental,
+        netGainSale,
+        otherIncome,
+        grantRecipients: grantData.names,
+        grantAmounts: grantData.amounts,
+        donationSources: donationData.names,
+        donationAmounts: donationData.amounts
+      };
+    }
+
+    // Save the raw XML files array to local storage.
+    function saveToLocalStorage() {
+      localStorage.setItem("xmlFiles", JSON.stringify(xmlFiles));
+    }
+
+    // Handler for parsing when the button is clicked.
+    function handleParse() {
+      const xmlText = document.getElementById("xmlInput").value;
+      if (!xmlText.trim()) {
+        alert("Please paste some XML first.");
+        return;
+      }
+      const result = parseXMLText(xmlText);
+      if (result) {
+        parsedResults.push(result);
+        xmlFiles.push(xmlText);
+        saveToLocalStorage();
+        renderTable();
+        document.getElementById("xmlInput").value = "";
+      }
+    }
+
+    // Render the table using the parsedResults array.
+    function renderTable() {
+      let tableHTML = "<table>";
+      tableHTML += "<tr>" +
+          "<th>Year</th>" +
+          "<th>Officer/Director/Trustee Compensation</th>" +
+          "<th>Other Professional Fees</th>" +
+          "<th>Interest Expense</th>" +
+          "<th>Taxes</th>" +
+          "<th>Other Expenses</th>" +
+          "<th>Operating Expenses Total</th>" +
+          "<th>Qualifying Distribution (Grant)</th>" +
+          "<th>Total Outflows</th>" +
+          "<th>Total Inflows</th>" +
+          "<th>Current Cash on Hand</th>" +
+          "<th>Interest on Savings</th>" +
+          "<th>Dividends</th>" +
+          "<th>Net Rental Income/Loss</th>" +
+          "<th>Net Gain on Sale of Assets</th>" +
+          "<th>Other Income</th>" +
+          "<th>Grant Recipients</th>" +
+          "<th>Grant Recipient Amounts</th>" +
+          "<th>Donor Sources</th>" +
+          "<th>Donor Amounts</th>" +
+          "</tr>";
+
+      parsedResults.forEach(result => {
+        tableHTML += "<tr>" +
+            "<td>" + result.year + "</td>" +
+            "<td>" + formatNum(result.comp) + "</td>" +
+            "<td>" + formatNum(result.profFees) + "</td>" +
+            "<td>" + formatNum(result.interest) + "</td>" +
+            "<td>" + formatNum(result.taxes) + "</td>" +
+            "<td>" + formatNum(result.otherExp) + "</td>" +
+            "<td>" + formatNum(result.operExpenses) + "</td>" +
+            "<td>" + formatNum(result.qualDist) + "</td>" +
+            "<td>" + formatNum(result.totalOutflows) + "</td>" +
+            "<td>" + formatNum(result.totalInflows) + "</td>" +
+            "<td>" + formatNum(result.currentCash) + "</td>" +
+            "<td>" + formatNum(result.interestOnSavings) + "</td>" +
+            "<td>" + formatNum(result.dividends) + "</td>" +
+            "<td>" + formatNum(result.netRental) + "</td>" +
+            "<td>" + formatNum(result.netGainSale) + "</td>" +
+            "<td>" + formatNum(result.otherIncome) + "</td>" +
+            "<td>" + result.grantRecipients + "</td>" +
+            "<td>" + result.grantAmounts + "</td>" +
+            "<td>" + result.donationSources + "</td>" +
+            "<td>" + result.donationAmounts + "</td>" +
+            "</tr>";
+      });
+      tableHTML += "</table>";
+      document.getElementById("output").innerHTML = tableHTML;
+    }
+
+    // Load stored XML files from local storage, parse them, and render the table.
+    function loadFromStorage() {
+      const stored = localStorage.getItem("xmlFiles");
+      if (stored) {
+        xmlFiles = JSON.parse(stored);
+        parsedResults = [];
+        xmlFiles.forEach(xmlText => {
+          const result = parseXMLText(xmlText);
+          if (result) {
+            parsedResults.push(result);
+          }
+        });
+        renderTable();
+      }
+    }
+
+    // Clear local storage and reset arrays.
+    function clearStorage() {
+      if (confirm("Are you sure you want to clear all saved XML files?")) {
+        localStorage.removeItem("xmlFiles");
+        xmlFiles = [];
+        parsedResults = [];
+        renderTable();
+      }
+    }
+
+    // On page load, load stored XML files.
+    window.addEventListener("load", loadFromStorage);
+  </script>
+</body>
+</html>
